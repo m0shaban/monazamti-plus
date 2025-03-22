@@ -186,6 +186,7 @@ class Task(db.Model):
     review_comment = db.Column(db.Text)
     assignee = db.relationship('User', foreign_keys=[assigned_to], back_populates='tasks')
     reviewer = db.relationship('User', foreign_keys=[reviewer_id], back_populates='reviewed_tasks')
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     @property
     def eisenhower_classification(self):

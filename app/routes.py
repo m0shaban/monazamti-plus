@@ -690,53 +690,60 @@ def create_department():
 @bp.route('/department/<int:department_id>')
 @login_required
 def view_department(department_id):
-    department = Department.query.get_or_404(department_id)
-    
-    # Get department statistics
-    active_projects = Project.query.join(User).filter(
-        User.department_id == department_id,
-        Project.status == 'Active'
-    ).all()
-    
-    pending_tasks = Task.query.join(User).filter(
-        User.department_id == department_id,
-        Task.status != 'Completed'
-    ).all()
-    
-    # Calculate performance data
-    performance_dates = []
-    performance_data = []
-    today = datetime.now()
-    for i in range(7):
-        date = today - timedelta(days=i)
-        completed_tasks = Task.query.join(User).filter(
-            User.department_id == department_id,
-            Task.status == 'Completed',
-            Task.updated_at >= date.replace(hour=0, minute=0),
-            Task.updated_at < (date + timedelta(days=1)).replace(hour=0, minute=0)
-        ).count()
-        total_tasks = Task.query.join(User).filter(
-            User.department_id == department_id,
-            Task.updated_at >= date.replace(hour=0, minute=0),
-            Task.updated_at < (date + timedelta(days=1)).replace(hour=0, minute=0)
-        ).count()
+    try:
+        department = Department.query.get_or_404(department_id)
         
-        performance_dates.insert(0, date.strftime('%Y-%m-%d'))
-        performance_data.insert(0, (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
-    
-    # Get available users for invitations
-    available_users = User.query.filter(
-        User.department_id == None,
-        User.role != UserRole.ADMIN
-    ).all()
-    
-    return render_template('department/view.html',
-                         department=department,
-                         active_projects=active_projects,
-                         pending_tasks=pending_tasks,
-                         performance_dates=performance_dates,
-                         performance_data=performance_data,
-                         available_users=available_users)
+        # Get department statistics
+        active_projects = Project.query.filter_by(
+            department_id=department_id,
+            status='Active'
+        ).all()
+        
+        pending_tasks = Task.query.join(Project).filter(
+            Project.department_id == department_id,
+            Task.status != 'Completed'
+        ).all()
+        
+        # Calculate performance data
+        performance_dates = []
+        performance_data = []
+        today = datetime.now()
+        
+        for i in range(7):
+            date = today - timedelta(days=i)
+            completed_tasks = Task.query.join(Project).filter(
+                Project.department_id == department_id,
+                Task.status == 'Completed',
+                Task.updated_at >= date.replace(hour=0, minute=0),
+                Task.updated_at < (date + timedelta(days=1)).replace(hour=0, minute=0)
+            ).count()
+            
+            total_tasks = max(Task.query.join(Project).filter(
+                Project.department_id == department_id,
+                Task.updated_at >= date.replace(hour=0, minute=0),
+                Task.updated_at < (date + timedelta(days=1)).replace(hour=0, minute=0)
+            ).count(), 1)  # Avoid division by zero
+            
+            performance_dates.insert(0, date.strftime('%Y-%m-%d'))
+            performance_data.insert(0, (completed_tasks / total_tasks * 100))
+        
+        # Get available users for invitations
+        available_users = User.query.filter(
+            User.department_id.is_(None),
+            User.role != UserRole.ADMIN
+        ).all()
+        
+        return render_template('department/view.html',
+                             department=department,
+                             active_projects=active_projects,
+                             pending_tasks=pending_tasks,
+                             performance_dates=performance_dates,
+                             performance_data=performance_data,
+                             available_users=available_users)
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error loading department: {str(e)}', 'danger')
+        return redirect(url_for('main.dashboard'))
 
 @bp.route('/department/<int:department_id>/edit', methods=['GET', 'POST'])
 @login_required
