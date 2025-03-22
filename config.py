@@ -6,11 +6,11 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secure-secret-key'
     
-    # تكوين قاعدة البيانات
-    mysql_url = os.environ.get('MYSQL_URL')
-    if mysql_url:
-        # تحويل عنوان MySQL إلى صيغة SQLAlchemy
-        database_url = mysql_url.replace('mysql://', 'mysql+pymysql://')
+    # Support for Heroku Postgres
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url:
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://')
     else:
         database_url = 'sqlite:///' + os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance/db.sqlite')
     

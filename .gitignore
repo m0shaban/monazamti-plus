@@ -5,3 +5,5 @@ instance/
 .venv
 venv/
 ENV/
+*.sqlite
+.DS_Store
