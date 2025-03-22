@@ -9,5 +9,10 @@
         "healthcheckTimeout": 100,
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 3
+    },
+    "github": {
+        "branch": "main",
+        "deploy": true,
+        "autoDeploy": true
     }
 }
