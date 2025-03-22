@@ -7,3 +7,9 @@ venv/
 ENV/
 *.sqlite
 .DS_Store
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
