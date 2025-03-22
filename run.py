@@ -16,8 +16,8 @@ def init_db():
             if not admin:
                 admin = User(
                     username='admin',
-                    email='admin@example.com',
-                    password=generate_password_hash('admin123', method='sha256'),
+                    email='eng.mohamed0shaban@gmail.com',  # Updated admin email
+                    password=generate_password_hash('Mm123456789', method='sha256'),  # Updated admin password
                     role=UserRole.ADMIN
                 )
                 db.session.add(admin)

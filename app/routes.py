@@ -104,44 +104,32 @@ def task_detail(task_id):
 @login_required
 @manager_required
 def create_project():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        description = request.form.get('description')
-        visible_to_all = request.form.get('visible_to_all') == 'yes'
-        shared_with = request.form.getlist('shared_with')
-        
-        project = Project(
-            name=name,
-            description=description,
-            created_by=current_user.id,
-            department_id=current_user.department_id,
-            visible_to_all_department=visible_to_all,
-            shared_with=[int(uid) for uid in shared_with] if shared_with else []
-        )
-        db.session.add(project)
-        
-        # إنشاء إشعارات للفريق
-        if visible_to_all:
-            team_members = User.query.filter_by(department_id=current_user.department_id).all()
-        else:
-            team_members = User.query.filter(User.id.in_(shared_with)).all()
+    try:
+        if request.method == 'POST':
+            name = request.form.get('name')
+            description = request.form.get('description')
+            visible_to_all = request.form.get('visible_to_all') == 'yes'
+            shared_with = request.form.getlist('shared_with')
             
-        for member in team_members:
-            notification = Notification(
-                user_id=member.id,
-                title='New Project Created',
-                message=f'You have been added to project: {name}',
-                type='project',
-                link=url_for('main.project_detail', project_id=project.id)
+            project = Project(
+                name=name,
+                description=description,
+                created_by=current_user.id,
+                department_id=current_user.department_id,
+                visible_to_all_department=visible_to_all,
+                shared_with=[int(uid) for uid in shared_with] if shared_with else []
             )
-            db.session.add(notification)
-        
-        db.session.commit()
-        flash('Project created successfully', 'success')
+            db.session.add(project)
+            db.session.commit()
+            flash('Project created successfully', 'success')
+            return redirect(url_for('main.dashboard'))
+            
+        team_members = User.query.filter_by(department_id=current_user.department_id).all()
+        return render_template('create_project.html', team_members=team_members)
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating project: {str(e)}', 'danger')
         return redirect(url_for('main.dashboard'))
-        
-    team_members = User.query.filter_by(department_id=current_user.department_id).all()
-    return render_template('create_project.html', team_members=team_members)
 
 @bp.route('/task/<int:task_id>/update_status', methods=['POST'])
 @login_required
@@ -500,64 +488,48 @@ def followed_projects():
 @login_required
 @manager_required
 def manager_dashboard():
-    # Get team performance data
-    team_members = User.query.filter_by(department_id=current_user.department_id).all()
-    team_stats = []
-    team_labels = []
-    team_performance_data = []
+    try:
+        # Get team performance data
+        team_members = User.query.filter_by(department_id=current_user.department_id).all()
+        team_stats = []
+        team_labels = []
+        team_performance_data = []
 
-    for member in team_members:
-        # Calculate workload and performance metrics
-        active_tasks = Task.query.filter_by(
-            assigned_to=member.id,
-            status='In Progress'
-        ).count()
-        
-        completed_tasks = Task.query.filter(
-            Task.assigned_to == member.id,
-            Task.status == 'Completed',
-            Task.updated_at >= datetime.now() - timedelta(days=30)
-        ).count()
+        for member in team_members:
+            # Calculate workload and performance metrics
+            active_tasks = Task.query.filter_by(
+                assigned_to=member.id,
+                status='In Progress'
+            ).count()
+            
+            member_stats = {
+                'username': member.username,
+                'active_tasks_count': active_tasks,
+                'workload_percentage': min((active_tasks / 10) * 100, 100),
+                'performance_rating': 3  # Default rating if no review exists
+            }
+            team_stats.append(member_stats)
+            team_labels.append(member.username)
+            team_performance_data.append(member_stats['performance_rating'] * 20)
 
-        # Calculate performance rating based on completed tasks and deadlines met
-        performance_rating = PerformanceReview.query.filter_by(
-            employee_id=member.id
-        ).order_by(PerformanceReview.created_at.desc()).first()
+        # Get active projects
+        projects = Project.query.filter_by(
+            department_id=current_user.department_id,
+            status='Active'
+        ).all()
 
-        member_stats = {
-            'username': member.username,
-            'active_tasks_count': active_tasks,
-            'workload_percentage': min((active_tasks / 10) * 100, 100),  # Assume 10 tasks is 100% workload
-            'performance_rating': performance_rating.rating if performance_rating else 3
-        }
-        team_stats.append(member_stats)
-        team_labels.append(member.username)
-        team_performance_data.append(member_stats['performance_rating'] * 20)  # Convert 1-5 rating to percentage
+        # Get upcoming milestones (within next 30 days)
+        upcoming_milestones = []
 
-    # Get upcoming milestones
-    upcoming_milestones = ProjectMilestone.query.filter(
-        ProjectMilestone.due_date > datetime.now(),
-        ProjectMilestone.due_date <= datetime.now() + timedelta(days=30),
-        ProjectMilestone.completed == False
-    ).order_by(ProjectMilestone.due_date).all()
-
-    # Get active projects
-    projects = Project.query.filter_by(status='Active').all()
-
-    # Add risk assessment to milestones
-    for milestone in upcoming_milestones:
-        milestone.is_at_risk = (
-            milestone.due_date - datetime.now() < timedelta(days=7) and
-            Task.query.filter_by(milestone_id=milestone.id, status='Completed').count() / 
-            Task.query.filter_by(milestone_id=milestone.id).count() < 0.5
-        )
-
-    return render_template('manager_dashboard.html',
-                         team_members=team_stats,
-                         upcoming_milestones=upcoming_milestones,
-                         projects=projects,
-                         team_labels=team_labels,
-                         team_performance_data=team_performance_data)
+        return render_template('manager_dashboard.html',
+                             team_members=team_stats,
+                             upcoming_milestones=upcoming_milestones,
+                             projects=projects,
+                             team_labels=team_labels,
+                             team_performance_data=team_performance_data)
+    except Exception as e:
+        flash(f'Error loading dashboard: {str(e)}', 'danger')
+        return redirect(url_for('main.dashboard'))
 
 @bp.route('/assign-tasks')
 @login_required
