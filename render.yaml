@@ -2,13 +2,11 @@ services:
   - type: web
     name: project-management
     env: python
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn run:app
-    branch: main # التحديث من الفرع الرئيسي
-    autoDeploy: true # تفعيل النشر التلقائي
+    autoDeploy: true
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.13.2
       - key: FLASK_APP
         value: run.py
       - key: FLASK_ENV
@@ -19,6 +17,8 @@ services:
         value: eng.mohamed0shaban@gmail.com
       - key: ADMIN_PASSWORD
         value: Mm123456789
+      - key: PYTHON_VERSION
+        value: 3.13.2
 
 databases:
   - name: project_db
