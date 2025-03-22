@@ -4,6 +4,8 @@ services:
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn run:app
+    branch: main # التحديث من الفرع الرئيسي
+    autoDeploy: true # تفعيل النشر التلقائي
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.2
@@ -13,9 +15,13 @@ services:
         value: production
       - key: SECRET_KEY
         generateValue: true
-    autoDeploy: true
+      - key: ADMIN_EMAIL
+        value: eng.mohamed0shaban@gmail.com
+      - key: ADMIN_PASSWORD
+        value: Mm123456789
 
 databases:
   - name: project_db
     databaseName: project_management
     user: admin
+    plan: free
