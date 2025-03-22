@@ -14,5 +14,14 @@
         "branch": "main",
         "deploy": true,
         "autoDeploy": true
+    },
+    "environments": {
+        "production": {
+            "variables": {
+                "FLASK_APP": "run.py",
+                "FLASK_ENV": "production",
+                "PYTHON_VERSION": "3.13.2"
+            }
+        }
     }
 }
