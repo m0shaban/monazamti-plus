@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Team Performance</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="teamPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Project Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="progress-wrapper">
+                        {% for project in projects %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ project.name }}</span>
+                                <span>{{ project.progress }}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: {{ project.progress }}%"></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Resource Allocation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Current Tasks</th>
+                                    <th>Workload</th>
+                                    <th>Performance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employee in team_members %}
+                                <tr>
+                                    <td>{{ employee.username }}</td>
+                                    <td>{{ employee.active_tasks_count }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" style="width: {{ employee.workload_percentage }}%">
+                                                {{ employee.workload_percentage }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="rating">
+                                            {% for i in range(employee.performance_rating) %}
+                                            <i class="fas fa-star text-warning"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Upcoming Deadlines</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for milestone in upcoming_milestones %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker {% if milestone.is_at_risk %}bg-danger{% endif %}"></div>
+                            <div class="timeline-content">
+                                <h6>{{ milestone.title }}</h6>
+                                <p>{{ milestone.description }}</p>
+                                <small>Due: {{ milestone.due_date.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Initialize charts and data visualization
+document.addEventListener('DOMContentLoaded', function() {
+    // Team Performance Chart
+    const ctx = document.getElementById('teamPerformanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ team_labels|tojson }},
+            datasets: [{
+                label: 'Performance Score',
+                data: {{ team_performance_data|tojson }},
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

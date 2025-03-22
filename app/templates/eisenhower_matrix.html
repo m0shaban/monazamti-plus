@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Eisenhower Matrix{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Eisenhower Matrix</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            <i class="fas fa-plus"></i> Add Task
+        </button>
+    </div>
+
+    <div class="row g-4">
+        <!-- Urgent & Important -->
+        <div class="col-md-6">
+            <div class="card h-100 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Do First</h5>
+                    <small>Urgent & Important</small>
+                </div>
+                <div class="card-body" id="urgent-important">
+                    {% for task in matrix.urgent_important %}
+                        {% include 'includes/matrix_task_card.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Not Urgent & Important -->
+        <div class="col-md-6">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Schedule</h5>
+                    <small>Not Urgent & Important</small>
+                </div>
+                <div class="card-body" id="not-urgent-important">
+                    {% for task in matrix.not_urgent_important %}
+                        {% include 'includes/matrix_task_card.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Urgent & Not Important -->
+        <div class="col-md-6">
+            <div class="card h-100 border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Delegate</h5>
+                    <small>Urgent & Not Important</small>
+                </div>
+                <div class="card-body" id="urgent-not-important">
+                    {% for task in matrix.urgent_not_important %}
+                        {% include 'includes/matrix_task_card.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Not Urgent & Not Important -->
+        <div class="col-md-6">
+            <div class="card h-100 border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Eliminate</h5>
+                    <small>Not Urgent & Not Important</small>
+                </div>
+                <div class="card-body" id="not-urgent-not-important">
+                    {% for task in matrix.not_urgent_not_important %}
+                        {% include 'includes/matrix_task_card.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+    // Initialize drag and drop for each quadrant
+    document.querySelectorAll('.card-body').forEach(quadrant => {
+        new Sortable(quadrant, {
+            group: 'matrix',
+            animation: 150,
+            onEnd: function(evt) {
+                const taskId = evt.item.dataset.taskId;
+                const newQuadrant = evt.to.id;
+                
+                // Update task classification via API
+                fetch(`/task/${taskId}/classify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ quadrant: newQuadrant })
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

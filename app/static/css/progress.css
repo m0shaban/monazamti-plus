@@ -1,0 +1,55 @@
+/* Custom Progress Bar Styles */
+.progress-bar-custom {
+    background-color: #4a90e2;
+    background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 1rem 1rem;
+    transition: width 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar-custom::before {
+    content: attr(data-progress);
+    position: absolute;
+    right: 10px;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Different status colors */
+.progress-bar-custom.completed {
+    background-color: #28a745;
+}
+
+.progress-bar-custom.overdue {
+    background-color: #dc3545;
+}
+
+.progress-bar-custom.in-progress {
+    background-color: #ffc107;
+}
+
+/* Animation for active progress bars */
+@keyframes progress-stripes {
+    from {
+        background-position: 1rem 0;
+    }
+    to {
+        background-position: 0 0;
+    }
+}
+
+.progress-bar-custom.active {
+    animation: progress-stripes 1s linear infinite;
+}

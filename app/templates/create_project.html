@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Create Project{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Create New Project</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.create_project') }}" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Project Name</label>
+                            <input type="text" name="name" id="name" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please provide a project name.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea name="description" id="description" class="form-control" rows="4" required></textarea>
+                            <div class="invalid-feedback">
+                                Please provide a project description.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Project Visibility</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="visible_to_all" 
+                                       value="yes" id="visibleYes" checked>
+                                <label class="form-check-label" for="visibleYes">
+                                    Visible to all department members
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="visible_to_all" 
+                                       value="no" id="visibleNo">
+                                <label class="form-check-label" for="visibleNo">
+                                    Share with specific members only
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="memberSelection" style="display: none;">
+                            <label class="form-label">Select Team Members</label>
+                            <select class="form-select" name="shared_with" multiple>
+                                {% for member in team_members %}
+                                    {% if member.id != current_user.id %}
+                                    <option value="{{ member.id }}">{{ member.username }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Create Project</button>
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const visibilityRadios = document.querySelectorAll('input[name="visible_to_all"]');
+    const memberSelection = document.getElementById('memberSelection');
+    
+    visibilityRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            memberSelection.style.display = this.value === 'no' ? 'block' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

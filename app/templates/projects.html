@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Projects</h1>
+        <a href="{{ url_for('main.create_project') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Project
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0">All Projects</h5>
+                </div>
+                <div class="col-auto">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Sort by: {{ sort_by|title }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('main.projects', sort='created_at') }}">Date Created</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.projects', sort='priority') }}">Priority</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.projects', sort='deadline') }}">Deadline</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% if projects %}
+                <div class="row g-4">
+                    {% for project in projects %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 project-card priority-{{ project.priority|lower }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h5 class="card-title">{{ project.name }}</h5>
+                                    <div class="dropdown">
+                                        <button class="btn btn-link" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('main.project_detail', project_id=project.id) }}">
+                                                    <i class="fas fa-eye"></i> View Details
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url_for('main.edit_project', project_id=project.id) }}">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <hr class="dropdown-divider">
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item text-danger" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#deleteProjectModal" 
+                                                        data-project-id="{{ project.id }}"
+                                                        data-project-name="{{ project.name }}">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <p class="card-text text-muted">{{ project.description|truncate(100) }}</p>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ project.progress }}%">
+                                        {{ project.progress }}%
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-{{ project.priority|lower }}">{{ project.priority }}</span>
+                                    {% if project.deadline %}
+                                        <small class="text-muted">Due: {{ project.deadline.strftime('%Y-%m-%d') }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h4 class="text-muted">No projects yet</h4>
+                    <p>Get started by creating your first project</p>
+                    <a href="{{ url_for('main.create_project') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Project
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Project Modal -->
+<div class="modal fade" id="deleteProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete "<span id="deleteProjectName"></span>"?</p>
+                <p class="text-danger">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteProjectForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteModal = document.getElementById('deleteProjectModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const projectId = button.getAttribute('data-project-id');
+                const projectName = button.getAttribute('data-project-name');
+                
+                document.getElementById('deleteProjectName').textContent = projectName;
+                document.getElementById('deleteProjectForm').action = "{{ url_for('main.delete_project', project_id=0) }}".replace('0', projectId);
+            });
+        }
+    });
+</script>
+{% endblock %}

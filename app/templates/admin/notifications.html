@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Notifications{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="department-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-0">System Notifications</h1>
+                <p class="mb-0">Stay informed about important system activities</p>
+            </div>
+            <button class="btn btn-light mark-all-read">
+                <i class="fas fa-check-double"></i> Mark All as Read
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            {% if notifications %}
+                {% for notification in notifications %}
+                <div class="notification-item {% if not notification.read %}unread{% endif %} mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">{{ notification.title }}</h5>
+                            <p class="mb-1">{{ notification.content }}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </small>
+                            {% if notification.related_user %}
+                            <small class="text-muted ms-2">
+                                <i class="fas fa-user me-1"></i>
+                                {{ notification.related_user.username }}
+                            </small>
+                            {% endif %}
+                        </div>
+                        <div>
+                            {% if not notification.read %}
+                            <form action="{{ url_for('main.mark_notification_read', notification_id=notification.id) }}" 
+                                  method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-link text-primary">
+                                    <i class="fas fa-check"></i> Mark as Read
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if not loop.last %}
+                <hr>
+                {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Notifications</h4>
+                    <p>You're all caught up!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mark all notifications as read
+    const markAllBtn = document.querySelector('.mark-all-read');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function() {
+            fetch('{{ url_for("main.mark_all_notifications_read") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

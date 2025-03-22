@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Tasks{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Assign Tasks - {{ department.name }}</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Unassigned Tasks</h5>
+                </div>
+                <div class="card-body">
+                    {% if unassigned_tasks %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>Project</th>
+                                        <th>Due Date</th>
+                                        <th>Assign To</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for task in unassigned_tasks %}
+                                    <tr>
+                                        <td>{{ task.title }}</td>
+                                        <td>{{ task.project.name }}</td>
+                                        <td>{{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'Not set' }}</td>
+                                        <td>
+                                            <form class="d-flex gap-2 assign-task-form" 
+                                                  action="{{ url_for('main.assign_task', task_id=task.id) }}" 
+                                                  method="POST">
+                                                <select name="employee_id" class="form-select form-select-sm">
+                                                    <option value="">Select employee...</option>
+                                                    {% for employee in employees %}
+                                                    <option value="{{ employee.id }}">{{ employee.username }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <button type="submit" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-user-plus"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No unassigned tasks available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Team Workload</h5>
+                </div>
+                <div class="card-body">
+                    {% for employee in employees %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>{{ employee.username }}</span>
+                            <span>{{ employee.tasks|length }} tasks</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" 
+                                 role="progressbar" 
+                                 style="width: {{ (employee.tasks|length / 10) * 100 }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

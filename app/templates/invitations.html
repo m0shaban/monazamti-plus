@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Department Invitations{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Department Invitations</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            {% if invitations %}
+                {% for invite in invitations %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ invite.department.name }}</h5>
+                        <p class="card-text">
+                            You have been invited to join this department by {{ invite.manager.username }}
+                        </p>
+                        <p class="text-muted">
+                            Sent on {{ invite.created_at.strftime('%Y-%m-%d') }}
+                        </p>
+                        <form action="{{ url_for('main.respond_invitation', invite_id=invite.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="response" value="accepted">
+                            <button type="submit" class="btn btn-success">Accept</button>
+                        </form>
+                        <form action="{{ url_for('main.respond_invitation', invite_id=invite.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="response" value="rejected">
+                            <button type="submit" class="btn btn-danger">Reject</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    You have no pending invitations.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
