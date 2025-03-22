@@ -10,11 +10,6 @@
         "restartPolicyType": "ON_FAILURE",
         "restartPolicyMaxRetries": 3
     },
-    "github": {
-        "branch": "main",
-        "deploy": true,
-        "autoDeploy": true  // هذا يضمن التحديث التلقائي
-    },
     "environments": {
         "production": {
             "variables": {
@@ -23,5 +18,11 @@
                 "PYTHON_VERSION": "3.13.2"
             }
         }
-    }
+    },
+    "plugins": [
+        {
+            "name": "MySQL",
+            "version": "8.0"
+        }
+    ]
 }
