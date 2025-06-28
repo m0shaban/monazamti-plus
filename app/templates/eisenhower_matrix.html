@@ -1,74 +1,182 @@
 {% extends "base.html" %}
 
-{% block title %}Eisenhower Matrix{% endblock %}
+{% block title %}مصفوفة آيزنهاور{% endblock %}
+
+{% block styles %}
+<style>
+.eisenhower-matrix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 15px;
+    height: 800px;
+}
+
+.matrix-quadrant {
+    background-color: #fff;
+    border-radius: 0.35rem;
+    padding: 1rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+    overflow: auto;
+}
+
+.quadrant-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.quadrant-1 {
+    border-top: 4px solid var(--danger);
+}
+
+.quadrant-2 {
+    border-top: 4px solid var(--warning);
+}
+
+.quadrant-3 {
+    border-top: 4px solid var(--primary);
+}
+
+.quadrant-4 {
+    border-top: 4px solid var(--secondary);
+}
+
+.task-card {
+    margin-bottom: 10px;
+    cursor: grab;
+}
+
+.task-card:active {
+    cursor: grabbing;
+}
+
+.drop-zone {
+    min-height: 150px;
+    transition: background-color 0.3s;
+}
+
+.drop-zone.dragover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* حالة السحب */
+.dragging {
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .eisenhower-matrix {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, 1fr);
+        height: auto;
+    }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Eisenhower Matrix</h1>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
-            <i class="fas fa-plus"></i> Add Task
-        </button>
+        <div>
+            <h1>مصفوفة آيزنهاور</h1>
+            <p class="text-muted">أولويات المهام حسب الأهمية والإلحاح</p>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-plus"></i> إضافة مهمة
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><h6 class="dropdown-header">اختر الربع:</h6></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.create_task', quadrant=1) }}">1. مهم وعاجل</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.create_task', quadrant=2) }}">2. مهم وغير عاجل</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.create_task', quadrant=3) }}">3. غير مهم وعاجل</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.create_task', quadrant=4) }}">4. غير مهم وغير عاجل</a></li>
+            </ul>
+        </div>
     </div>
-
-    <div class="row g-4">
-        <!-- Urgent & Important -->
-        <div class="col-md-6">
-            <div class="card h-100 border-danger">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0">Do First</h5>
-                    <small>Urgent & Important</small>
+    
+    <div class="eisenhower-matrix">
+        <!-- الربع الأول: مهم وعاجل - افعله الآن -->
+        <div class="matrix-quadrant quadrant-1">
+            <div class="quadrant-heading">
+                <h4>1. مهم وعاجل</h4>
+                <span class="badge bg-danger">افعله الآن</span>
+            </div>
+            <div class="drop-zone" data-quadrant="1">
+                {% for task in q1_tasks %}
+                <div class="task-card" draggable="true" data-task-id="{{ task.id }}" data-quadrant="1">
+                    {% include 'includes/matrix_task_card.html' %}
                 </div>
-                <div class="card-body" id="urgent-important">
-                    {% for task in matrix.urgent_important %}
-                        {% include 'includes/matrix_task_card.html' %}
-                    {% endfor %}
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <p>لا توجد مهام مهمة وعاجلة</p>
                 </div>
+                {% endfor %}
             </div>
         </div>
-
-        <!-- Not Urgent & Important -->
-        <div class="col-md-6">
-            <div class="card h-100 border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Schedule</h5>
-                    <small>Not Urgent & Important</small>
+        
+        <!-- الربع الثاني: مهم وغير عاجل - جدوله -->
+        <div class="matrix-quadrant quadrant-2">
+            <div class="quadrant-heading">
+                <h4>2. مهم وغير عاجل</h4>
+                <span class="badge bg-warning">جدوله</span>
+            </div>
+            <div class="drop-zone" data-quadrant="2">
+                {% for task in q2_tasks %}
+                <div class="task-card" draggable="true" data-task-id="{{ task.id }}" data-quadrant="2">
+                    {% include 'includes/matrix_task_card.html' %}
                 </div>
-                <div class="card-body" id="not-urgent-important">
-                    {% for task in matrix.not_urgent_important %}
-                        {% include 'includes/matrix_task_card.html' %}
-                    {% endfor %}
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                    <p>لا توجد مهام مهمة وغير عاجلة</p>
                 </div>
+                {% endfor %}
             </div>
         </div>
-
-        <!-- Urgent & Not Important -->
-        <div class="col-md-6">
-            <div class="card h-100 border-warning">
-                <div class="card-header bg-warning">
-                    <h5 class="mb-0">Delegate</h5>
-                    <small>Urgent & Not Important</small>
+        
+        <!-- الربع الثالث: غير مهم وعاجل - فوضه -->
+        <div class="matrix-quadrant quadrant-3">
+            <div class="quadrant-heading">
+                <h4>3. غير مهم وعاجل</h4>
+                <span class="badge bg-primary">فوضه</span>
+            </div>
+            <div class="drop-zone" data-quadrant="3">
+                {% for task in q3_tasks %}
+                <div class="task-card" draggable="true" data-task-id="{{ task.id }}" data-quadrant="3">
+                    {% include 'includes/matrix_task_card.html' %}
                 </div>
-                <div class="card-body" id="urgent-not-important">
-                    {% for task in matrix.urgent_not_important %}
-                        {% include 'includes/matrix_task_card.html' %}
-                    {% endfor %}
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-user-friends fa-2x mb-2"></i>
+                    <p>لا توجد مهام غير مهمة وعاجلة</p>
                 </div>
+                {% endfor %}
             </div>
         </div>
-
-        <!-- Not Urgent & Not Important -->
-        <div class="col-md-6">
-            <div class="card h-100 border-secondary">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Eliminate</h5>
-                    <small>Not Urgent & Not Important</small>
+        
+        <!-- الربع الرابع: غير مهم وغير عاجل - تخلص منه -->
+        <div class="matrix-quadrant quadrant-4">
+            <div class="quadrant-heading">
+                <h4>4. غير مهم وغير عاجل</h4>
+                <span class="badge bg-secondary">تخلص منه</span>
+            </div>
+            <div class="drop-zone" data-quadrant="4">
+                {% for task in q4_tasks %}
+                <div class="task-card" draggable="true" data-task-id="{{ task.id }}" data-quadrant="4">
+                    {% include 'includes/matrix_task_card.html' %}
                 </div>
-                <div class="card-body" id="not-urgent-not-important">
-                    {% for task in matrix.not_urgent_not_important %}
-                        {% include 'includes/matrix_task_card.html' %}
-                    {% endfor %}
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-trash-alt fa-2x mb-2"></i>
+                    <p>لا توجد مهام غير مهمة وغير عاجلة</p>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -76,28 +184,73 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 <script>
-    // Initialize drag and drop for each quadrant
-    document.querySelectorAll('.card-body').forEach(quadrant => {
-        new Sortable(quadrant, {
-            group: 'matrix',
-            animation: 150,
-            onEnd: function(evt) {
-                const taskId = evt.item.dataset.taskId;
-                const newQuadrant = evt.to.id;
-                
-                // Update task classification via API
-                fetch(`/task/${taskId}/classify`, {
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة وظائف السحب والإفلات
+    const taskCards = document.querySelectorAll('.task-card');
+    const dropZones = document.querySelectorAll('.drop-zone');
+    
+    let draggedTask = null;
+    
+    // إضافة أحداث للعناصر القابلة للسحب
+    taskCards.forEach(card => {
+        card.addEventListener('dragstart', function(e) {
+            draggedTask = this;
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.dataset.taskId);
+        });
+        
+        card.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+        });
+    });
+    
+    // إضافة أحداث لمناطق الإفلات
+    dropZones.forEach(zone => {
+        zone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+        
+        zone.addEventListener('dragleave', function() {
+            this.classList.remove('dragover');
+        });
+        
+        zone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            const taskId = e.dataTransfer.getData('text/plain');
+            const targetQuadrant = this.dataset.quadrant;
+            const originalQuadrant = draggedTask.dataset.quadrant;
+            
+            if (targetQuadrant !== originalQuadrant) {
+                // إرسال طلب لتحديث الربع
+                fetch(`/task/${taskId}/update_quadrant`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                        'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     },
-                    body: JSON.stringify({ quadrant: newQuadrant })
+                    body: JSON.stringify({ quadrant: targetQuadrant })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // نقل العنصر إلى الربع الجديد
+                        this.appendChild(draggedTask);
+                        draggedTask.dataset.quadrant = targetQuadrant;
+                    } else {
+                        alert('فشل تحديث ربع المهمة.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('حدث خطأ أثناء تحديث ربع المهمة.');
                 });
             }
         });
     });
+});
 </script>
 {% endblock %}

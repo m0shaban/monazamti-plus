@@ -1,0 +1,146 @@
+/* Dark Theme Styles */
+
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.card {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #333;
+}
+
+.card-header, .modal-header, .modal-footer {
+    background-color: #2a2a2a;
+    border-color: #333;
+}
+
+.form-control, .form-select {
+    background-color: #333;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #3a3a3a;
+    color: #fff;
+    border-color: var(--bs-primary);
+}
+
+.modal-content {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #333;
+}
+
+.text-muted {
+    color: #aaa !important;
+}
+
+.list-group-item {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.list-group-item:hover {
+    background-color: #2a2a2a;
+}
+
+.btn-secondary {
+    background-color: #444;
+    border-color: #555;
+}
+
+.btn-outline-primary {
+    color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--bs-primary);
+    color: #fff;
+}
+
+.btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.dropdown-menu {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.dropdown-item {
+    color: #e0e0e0;
+}
+
+.dropdown-item:hover {
+    background-color: #2a2a2a;
+    color: #fff;
+}
+
+.table {
+    color: #e0e0e0;
+}
+
+.table-striped>tbody>tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.alert-success {
+    background-color: rgba(40, 167, 69, 0.2);
+    border-color: rgba(40, 167, 69, 0.3);
+    color: #75b798;
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.3);
+    color: #ea868f;
+}
+
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.2);
+    border-color: rgba(255, 193, 7, 0.3);
+    color: #ffda6a;
+}
+
+.alert-info {
+    background-color: rgba(13, 202, 240, 0.2);
+    border-color: rgba(13, 202, 240, 0.3);
+    color: #6edff6;
+}
+
+.nav-pills .nav-link {
+    color: #e0e0e0;
+}
+
+.text-dark {
+    color: #e0e0e0 !important;
+}
+
+hr {
+    border-color: #444;
+}
+
+.sidebar {
+    background: linear-gradient(135deg, #2a3a6d 0%, #1a2346 100%);
+}
+
+.bg-light {
+    background-color: #1e1e1e !important;
+}
+
+.footer {
+    background-color: #1e1e1e !important;
+    color: #aaa;
+}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <!-- بطاقة نصيحة اليوم -->
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card shadow-sm border-0 rounded-lg">
+                <div class="card-body p-3 text-center">
+                    <h6 class="text-muted mb-2"><i class="fas fa-lightbulb me-2 text-warning"></i>نصيحة إدارية</h6>
+                    <p class="daily-advice mb-0" id="advice-text"></p>
+                    <small class="text-muted mt-2 d-block" id="advice-source"></small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Login</h5>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST" action="{{ url_for('auth.login') }}">
+                        {{ form.hidden_tag() }}  <!-- Ensure CSRF token is included -->
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control") }}
+                        </div>
+                        <div class="mb-3 form-check">
+                            {{ form.remember_me(class="form-check-input") }}
+                            {{ form.remember_me.label(class="form-check-label") }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+                    </form>
+                    <hr>
+                    <div class="text-center">
+                        <p>Don't have an account? <a href="{{ url_for('auth.signup') }}">Register</a></p>
+                        <p><a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // مصفوفة النصائح مع المصادر
+        const advices = [
+            {
+                text: "البركة في التخطيط والعمل: اجعل الإتقان والإحسان منهجًا في إدارة مشاريعك.",
+                source: "قال رسول الله ﷺ: \"إن الله يحب إذا عمل أحدكم عملاً أن يتقنه\" (صحيح الجامع)"
+            },
+            {
+                text: "التوكل مع الأخذ بالأسباب: اتقِ الله في عملك وسترى البركة في مشروعك.",
+                source: "قال تعالى: \"وَمَنْ يَتَّقِ اللَّهَ يَجْعَلْ لَهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ\" (الطلاق: 2-3)"
+            },
+            {
+                text: "العدل والإنصاف في الإدارة: كن عادلاً ومنصفًا مع فريق العمل والعملاء.",
+                source: "قال النبي ﷺ: \"المسلم أخو المسلم، لا يظلمه ولا يسلمه\" (البخاري ومسلم)"
+            },
+            {
+                text: "تنظيم الوقت وأداء الأمانة: احرص على أداء مسؤولياتك بصدق وأمانة.",
+                source: "قال تعالى: \"إِنَّ اللَّهَ يَأْمُرُكُمْ أَنْ تُؤَدُّوا الْأَمَانَاتِ إِلَىٰ أَهْلِهَا\" (النساء: 58)"
+            },
+            {
+                text: "الاستشارة والتعاون: اطلب المشورة من أهل الخبرة، فالرأي السديد مفتاح النجاح.",
+                source: "قال تعالى: \"وَشَاوِرْهُمْ فِي الْأَمْرِ\" (آل عمران: 159)"
+            }
+        ];
+        
+        // اختيار نصيحة عشوائية
+        const randomAdvice = advices[Math.floor(Math.random() * advices.length)];
+        
+        // عرض النصيحة والمصدر
+        document.getElementById('advice-text').textContent = randomAdvice.text;
+        document.getElementById('advice-source').textContent = randomAdvice.source;
+    });
+</script>
+{% endblock %}

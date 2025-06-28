@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Risk Management{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Risk Dashboard</h1>
+            <p class="lead">Overview of risks across all projects</p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-plus"></i> Add New Risk
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                {% for project in projects %}
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('main.risk_management', project_id=project.id) }}">
+                        {{ project.name }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-danger text-white text-center h-100">
+                <div class="card-body">
+                    <h1 class="display-4">{{ extreme_risks|length }}</h1>
+                    <p class="lead">Extreme Risks</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark text-center h-100">
+                <div class="card-body">
+                    <h1 class="display-4">{{ high_risks|length }}</h1>
+                    <p class="lead">High Risks</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white text-center h-100">
+                <div class="card-body">
+                    <h1 class="display-4">{{ medium_risks|length }}</h1>
+                    <p class="lead">Medium Risks</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white text-center h-100">
+                <div class="card-body">
+                    <h1 class="display-4">{{ low_risks|length }}</h1>
+                    <p class="lead">Low Risks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">توزيع المخاطر</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="risksDistributionChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">حالة المخاطر</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="risksStatusChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">جميع المخاطر</h5>
+            <div class="input-group" style="width: 300px;">
+                <input type="text" id="riskSearch" class="form-control" placeholder="بحث...">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-filter"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#" data-filter="all">جميع المخاطر</a></li>
+                    <li><a class="dropdown-item" href="#" data-filter="extreme">مخاطر قصوى</a></li>
+                    <li><a class="dropdown-item" href="#" data-filter="high">مخاطر عالية</a></li>
+                    <li><a class="dropdown-item" href="#" data-filter="medium">مخاطر متوسطة</a></li>
+                    <li><a class="dropdown-item" href="#" data-filter="low">مخاطر منخفضة</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#" data-filter="open">مفتوحة</a></li>
+                    <li><a class="dropdown-item" href="#" data-filter="mitigated">تم التخفيف</a></li>
+                    <li><a class="dropdown-item" href="#" data-filter="closed">مغلقة</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>المشروع</th>
+                            <th>العنوان</th>
+                            <th>التأثير</th>
+                            <th>الاحتمالية</th>
+                            <th>الشدة</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for risk in risks %}
+                        <tr data-severity="{{ 'extreme' if risk.severity > 16 else 'high' if risk.severity > 9 else 'medium' if risk.severity > 4 else 'low' }}"
+                            data-status="{{ risk.status.lower() }}"
+                            class="{{ 'table-danger' if risk.severity > 16 else 'table-warning' if risk.severity > 9 else '' }}">
+                            <td>
+                                <a href="{{ url_for('main.project_detail', project_id=risk.project_id) }}">
+                                    {{ risk.project.name }}
+                                </a>
+                            </td>
+                            <td>{{ risk.title }}</td>
+                            <td>
+                                <div class="rating">
+                                    {% for i in range(1, 6) %}
+                                    <i class="fas fa-star {{ 'text-warning' if i <= risk.impact else 'text-muted' }}"></i>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="rating">
+                                    {% for i in range(1, 6) %}
+                                    <i class="fas fa-star {{ 'text-warning' if i <= risk.probability else 'text-muted' }}"></i>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'danger' if risk.severity > 16 else 'warning' if risk.severity > 9 else 'info' if risk.severity > 4 else 'success' }}">
+                                    {{ risk.severity }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if risk.status == 'Mitigated' 
+                                                      else 'secondary' if risk.status == 'Closed'
+                                                      else 'danger' }}">
+                                    {{ risk.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('main.risk_management', project_id=risk.project_id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i> تفاصيل
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    {% for project, project_risks in risks_by_project.items() %}
+    <div class="card mt-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <a href="{{ url_for('main.project_detail', project_id=project.id) }}">{{ project.name }}</a>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <span class="badge bg-danger me-1">{{ project_risks|selectattr('severity', '>', 16)|list|length }} قصوى</span>
+                    <span class="badge bg-warning me-1">{{ project_risks|selectattr('severity', '>', 9)|selectattr('severity', '<=', 16)|list|length }} عالية</span>
+                    <span class="badge bg-info me-1">{{ project_risks|selectattr('severity', '>', 4)|selectattr('severity', '<=', 9)|list|length }} متوسطة</span>
+                    <span class="badge bg-success">{{ project_risks|selectattr('severity', '<=', 4)|list|length }} منخفضة</span>
+                </div>
+                <a href="{{ url_for('main.risk_management', project_id=project.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-chart-pie"></i> عرض تحليل المخاطر
+                </a>
+            </div>
+            
+            {% for risk in project_risks[:3] %}
+            <div class="alert alert-{{ 'danger' if risk.severity > 16 else 'warning' if risk.severity > 9 else 'info' if risk.severity > 4 else 'success' }} mb-2">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>{{ risk.title }}</strong>
+                        <p class="mb-0 small">{{ risk.description|truncate(100) }}</p>
+                    </div>
+                    <div>
+                        <span class="badge bg-secondary">{{ risk.severity }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if project_risks|length > 3 %}
+            <div class="text-center mt-2">
+                <a href="{{ url_for('main.risk_management', project_id=project.id) }}" class="btn btn-sm btn-link">
+                    عرض {{ project_risks|length - 3 }} مخاطر إضافية
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Chart for risks distribution
+    const distributionCtx = document.getElementById('risksDistributionChart').getContext('2d');
+    new Chart(distributionCtx, {
+        type: 'pie',
+        data: {
+            labels: ['مخاطر قصوى', 'مخاطر عالية', 'مخاطر متوسطة', 'مخاطر منخفضة'],
+            datasets: [{
+                data: [
+                    {{ extreme_risks|length }},
+                    {{ high_risks|length }},
+                    {{ medium_risks|length }},
+                    {{ low_risks|length }}
+                ],
+                backgroundColor: [
+                    '#e74a3b',
+                    '#f6c23e',
+                    '#36b9cc',
+                    '#1cc88a'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Chart for risk status
+    const statusCtx = document.getElementById('risksStatusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['مفتوحة', 'تم التخفيف', 'مغلقة'],
+            datasets: [{
+                data: [
+                    {{ risks|selectattr('status', 'equalto', 'Open')|list|length }},
+                    {{ risks|selectattr('status', 'equalto', 'Mitigated')|list|length }},
+                    {{ risks|selectattr('status', 'equalto', 'Closed')|list|length }}
+                ],
+                backgroundColor: [
+                    '#e74a3b',
+                    '#4e73df',
+                    '#858796'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Search functionality
+    const searchInput = document.getElementById('riskSearch');
+    const rows = document.querySelectorAll('tbody tr');
+    
+    searchInput.addEventListener('keyup', function() {
+        const term = this.value.toLowerCase();
+        
+        rows.forEach(row => {
+            const title = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            const project = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+            
+            if (title.includes(term) || project.includes(term)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // Filter functionality
+    document.querySelectorAll('.dropdown-item[data-filter]').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filter = this.dataset.filter;
+            
+            if (filter === 'all') {
+                rows.forEach(row => {
+                    row.style.display = '';
+                });
+                return;
+            }
+            
+            rows.forEach(row => {
+                if (row.dataset.severity === filter || row.dataset.status === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

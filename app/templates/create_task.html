@@ -1,39 +1,157 @@
 {% extends "base.html" %}
-{% block title %}Create Task{% endblock %}
+
+{% block title %}إنشاء مهمة جديدة{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-body">
-                <h2 class="card-title text-center mb-4">Create New Task</h2>
-                <form method="POST" class="needs-validation" novalidate>
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Task Title</label>
-                        <input type="text" name="title" id="title" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="due_date" class="form-label">Due Date</label>
-                        <input type="date" name="due_date" id="due_date" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label for="priority" class="form-label">Priority</label>
-                        <select name="priority" id="priority" class="form-select">
-                            <option value="Low">Low</option>
-                            <option value="Medium" selected>Medium</option>
-                            <option value="High">High</option>
-                        </select>
-                    </div>
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Create Task</button>
-                        <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">إنشاء مهمة جديدة</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() if form }}
+                        <!-- إضافة CSRF token -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label for="title" class="form-label">عنوان المهمة <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="project_id" class="form-label">المشروع <span class="text-danger">*</span></label>
+                                <select class="form-select" id="project_id" name="project_id" required>
+                                    <option value="">اختر المشروع...</option>
+                                    {% for project in projects %}
+                                    <option value="{{ project.id }}">{{ project.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">الوصف</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="status" class="form-label">الحالة</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="Not Started" selected>لم تبدأ</option>
+                                    <option value="In Progress">قيد التنفيذ</option>
+                                    <option value="Completed">مكتملة</option>
+                                    <option value="Blocked">متوقفة</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="priority" class="form-label">الأولوية</label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="Low">منخفضة</option>
+                                    <option value="Medium" selected>متوسطة</option>
+                                    <option value="High">عالية</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="assigned_to" class="form-label">مسندة إلى</label>
+                                <select class="form-select" id="assigned_to" name="assigned_to">
+                                    <option value="">اختر عضو الفريق...</option>
+                                    {% for member in team_members %}
+                                    <option value="{{ member.id }}" {% if member.id == current_user.id %}selected{% endif %}>{{ member.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="due_date" class="form-label">تاريخ الاستحقاق</label>
+                                <input type="date" class="form-control" id="due_date" name="due_date">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="estimated_hours" class="form-label">الوقت المقدر (ساعات)</label>
+                                <input type="number" step="0.5" min="0" class="form-control" id="estimated_hours" name="estimated_hours" value="1">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="importance" class="form-label">الأهمية (مصفوفة آيزنهاور)</label>
+                                <select class="form-select" id="importance" name="importance">
+                                    <option value="1">مهم جدًا</option>
+                                    <option value="2" selected>مهم</option>
+                                    <option value="3">متوسط الأهمية</option>
+                                    <option value="4">أقل أهمية</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label d-block">إعدادات إضافية</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="require_evidence" name="require_evidence" value="1">
+                                <label class="form-check-label" for="require_evidence">تتطلب دليل إكمال</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="is_recurring" name="is_recurring" value="1">
+                                <label class="form-check-label" for="is_recurring">مهمة متكررة</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="tags" class="form-label">العلامات (مفصولة بفواصل)</label>
+                            <input type="text" class="form-control" id="tags" name="tags" placeholder="مثال: تطوير، تصميم، اختبار">
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('main.tasks') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-right"></i> العودة إلى المهام
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> إنشاء المهمة
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // متابعة التغييرات في تحديد المشروع لتحميل أعضاء الفريق المتاحين
+    const projectSelect = document.getElementById('project_id');
+    const assigneeSelect = document.getElementById('assigned_to');
+    
+    projectSelect.addEventListener('change', function() {
+        const projectId = this.value;
+        if (!projectId) return;
+        
+        // طلب أعضاء الفريق المرتبطين بالمشروع المحدد
+        fetch(`/api/project/${projectId}/team_members`)
+            .then(response => response.json())
+            .then(data => {
+                // حفظ القيمة الحالية
+                const currentValue = assigneeSelect.value;
+                
+                // إعادة بناء قائمة الأعضاء
+                assigneeSelect.innerHTML = '<option value="">اختر عضو الفريق...</option>';
+                
+                data.members.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member.id;
+                    option.textContent = member.username;
+                    if (member.id == currentValue) {
+                        option.selected = true;
+                    }
+                    assigneeSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    });
+});
+</script>
 {% endblock %}

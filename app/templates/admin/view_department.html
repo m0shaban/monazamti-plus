@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}{{ department.name }} - Department Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ department.name }}</h1>
+        <div>
+            <a href="{{ url_for('main.edit_department', department_id=department.id) }}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-edit"></i> Edit Department
+            </a>
+            <a href="{{ url_for('main.admin_departments') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-right"></i> Back to Departments
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Department Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Description</h6>
+                        <p>{{ department.description or 'No description provided' }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Department Manager</h6>
+                        {% if department.manager %}
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <span class="avatar">{{ department.manager.username[0] }}</span>
+                            </div>
+                            <div>
+                                <div>{{ department.manager.username }}</div>
+                                <div class="text-muted small">{{ department.manager.email }}</div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="text-muted">No manager assigned</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Statistics</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card bg-light text-center">
+                                    <div class="card-body">
+                                        <h2>{{ department.members.count() }}</h2>
+                                        <p class="text-muted mb-0">Members</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light text-center">
+                                    <div class="card-body">
+                                        <h2>{{ department.projects|length }}</h2>
+                                        <p class="text-muted mb-0">Total Projects</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light text-center">
+                                    <div class="card-body">
+                                        <h2>{{ active_projects }}</h2>
+                                        <p class="text-muted mb-0">Active Projects</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Team Members</h5>
+                    <a href="#" class="btn btn-sm btn-primary">
+                        <i class="fas fa-user-plus"></i> Add Member
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if members %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Email</th>
+                                    <th>Tasks</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for member in members %}
+                                <tr>
+                                    <td>{{ member.username }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if member.role == 'admin' 
+                                                               else 'primary' if member.role == 'project_manager' 
+                                                               else 'secondary' }}">
+                                            {{ member.role }}
+                                        </span>
+                                    </td>
+                                    <td>{{ member.email }}</td>
+                                    <td>{{ member.assigned_tasks|length }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('main.edit_user', user_id=member.id) }}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger">
+                                                <i class="fas fa-user-minus"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <p class="text-muted">No members in this department yet</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Add Member
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Projects</h5>
+                </div>
+                <div class="card-body">
+                    {% if department.projects %}
+                        <div class="list-group">
+                            {% for project in department.projects %}
+                            <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ project.name }}</h6>
+                                        <p class="mb-1 small text-muted">{{ project.description|truncate(50) }}</p>
+                                    </div>
+                                    <span class="badge bg-{{ 'success' if project.status == 'Completed' 
+                                                         else 'primary' if project.status == 'Active' 
+                                                         else 'warning' }}">
+                                        {{ project.status }}
+                                    </span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">No projects in this department yet</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Department Activity Timeline -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item py-3">
+                            <div class="d-flex">
+                                <div class="timeline-icon bg-primary">
+                                    <i class="fas fa-user-plus text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <div class="fw-bold">New member added</div>
+                                    <div>Ahmed joined the department</div>
+                                    <div class="text-muted small">2 days ago</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item py-3">
+                            <div class="d-flex">
+                                <div class="timeline-icon bg-success">
+                                    <i class="fas fa-check text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <div class="fw-bold">Project completed</div>
+                                    <div>Website Redesign project was completed</div>
+                                    <div class="text-muted small">1 week ago</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group-item py-3">
+                            <div class="d-flex">
+                                <div class="timeline-icon bg-info">
+                                    <i class="fas fa-project-diagram text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <div class="fw-bold">New project created</div>
+                                    <div>Mobile App Development project was created</div>
+                                    <div class="text-muted small">2 weeks ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #4e73df;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.timeline-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+</style>
+{% endblock %}

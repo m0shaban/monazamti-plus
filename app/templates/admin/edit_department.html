@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Department{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Edit Department</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- CSRF token -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Department Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ department.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ department.description }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="manager_id" class="form-label">Department Manager</label>
+                            <select class="form-select" id="manager_id" name="manager_id">
+                                <option value="">Select Manager</option>
+                                {% for manager in managers %}
+                                <option value="{{ manager.id }}" {% if department.manager_id == manager.id %}selected{% endif %}>
+                                    {{ manager.username }} ({{ manager.email }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('main.admin_departments') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-right"></i> Back to Departments
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Department
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

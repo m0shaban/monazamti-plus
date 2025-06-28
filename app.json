@@ -1,21 +1,15 @@
 {
   "name": "Project Management System",
-  "description": "A comprehensive project and task management system",
-  "repository": "https://github.com/m0shaban/project-management",
-  "keywords": ["python", "flask", "project management"],
-  "addons": ["heroku-postgresql:essential-0"],
-  "buildpacks": [
-    {
-      "url": "heroku/python"
-    }
-  ],
+  "description": "A comprehensive project management system built with Flask",
+  "repository": "https://github.com/yourusername/project-management",
+  "keywords": ["flask", "python", "project-management"],
   "env": {
     "SECRET_KEY": {
       "description": "A secret key for verifying the integrity of signed cookies",
       "generator": "secret"
     },
     "FLASK_APP": {
-      "description": "Path to the Flask application",
+      "description": "Flask application file",
       "value": "run.py"
     },
     "FLASK_ENV": {
@@ -23,7 +17,14 @@
       "value": "production"
     }
   },
-  "scripts": {
-    "postdeploy": "flask db upgrade && flask init-db"
-  }
+  "addons": [
+    {
+      "plan": "heroku-postgresql:hobby-dev"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
 }

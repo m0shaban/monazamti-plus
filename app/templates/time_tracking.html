@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Time Tracking{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Time Tracking</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newTimeEntryModal">
+            <i class="fas fa-plus"></i> Add Time Entry
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Time Records</h5>
+                    <div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#">All Projects</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% for project in projects %}
+                                <li><a class="dropdown-item" href="#">{{ project.name }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="btn-group ms-2">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="fas fa-clock"></i> Period
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#">Today</a></li>
+                                <li><a class="dropdown-item" href="#">This Week</a></li>
+                                <li><a class="dropdown-item" href="#">This Month</a></li>
+                                <li><a class="dropdown-item" href="#">All Time</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Project</th>
+                                    <th>Task</th>
+                                    <th>Description</th>
+                                    <th>Start</th>
+                                    <th>End</th>
+                                    <th>Duration</th>
+                                    <th>Billable</th>
+                                    <th>Cost</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in time_entries %}
+                                <tr>
+                                    <td>{{ entry.project.name }}</td>
+                                    <td>{{ entry.task.title if entry.task else '-' }}</td>
+                                    <td>{{ entry.description }}</td>
+                                    <td>{{ entry.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ entry.end_time.strftime('%Y-%m-%d %H:%M') if entry.end_time else 'In Progress' }}</td>
+                                    <td>{{ "%.2f"|format(entry.duration or 0) }} hours</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if entry.billable else 'secondary' }}">
+                                            {{ 'Yes' if entry.billable else 'No' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ "%.2f"|format(entry.calculate_cost()) }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button type="button" class="btn btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#editTimeEntryModal"
+                                                    data-entry-id="{{ entry.id }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteTimeEntryModal"
+                                                    data-entry-id="{{ entry.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Total Duration:</strong> {{ "%.2f"|format(total_hours) }} hours
+                        </div>
+                        <div>
+                            <strong>Total Cost:</strong> {{ "%.2f"|format(total_cost) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Time Distribution by Project</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="projectTimeChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Time Distribution by Day</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dailyTimeChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Time Entry Modal -->
+<div class="modal fade" id="newTimeEntryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Time Entry</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.add_time_entry') }}">
+                <!-- إضافة CSRF token -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="project_id" class="form-label">Project</label>
+                        <select class="form-select" id="project_id" name="project_id" required>
+                            <option value="">Select a project...</option>
+                            {% for project in projects %}
+                            <option value="{{ project.id }}">{{ project.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task_id" class="form-label">Task (optional)</label>
+                        <select class="form-select" id="task_id" name="task_id">
+                            <option value="">Select a task...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="start_time" class="form-label">Start Time</label>
+                            <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                        </div>
+                        <div class="col">
+                            <label for="end_time" class="form-label">End Time</label>
+                            <input type="datetime-local" class="form-control" id="end_time" name="end_time">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="billable" name="billable" checked>
+                            <label class="form-check-label" for="billable">
+                                Billable
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="hourly_rate" class="form-label">Hourly Rate</label>
+                        <input type="number" step="0.01" class="form-control" id="hourly_rate" name="hourly_rate" value="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Data for project time distribution chart
+    const projectLabels = {{ project_names|tojson }};
+    const projectData = {{ project_hours|tojson }};
+    
+    // Data for daily time distribution chart
+    const dateLabels = {{ date_labels|tojson }};
+    const dateData = {{ daily_hours|tojson }};
+    
+    // Create project time distribution chart
+    const projectCtx = document.getElementById('projectTimeChart').getContext('2d');
+    new Chart(projectCtx, {
+        type: 'doughnut',
+        data: {
+            labels: projectLabels,
+            datasets: [{
+                data: projectData,
+                backgroundColor: [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                    '#5a5c69', '#858796', '#6f42c1', '#fd7e14', '#20c9a6'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+    
+    // Create daily time distribution chart
+    const dateCtx = document.getElementById('dailyTimeChart').getContext('2d');
+    new Chart(dateCtx, {
+        type: 'bar',
+        data: {
+            labels: dateLabels,
+            datasets: [{
+                label: 'Work Hours',
+                data: dateData,
+                backgroundColor: '#4e73df',
+                borderColor: '#4e73df',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Load tasks when a project is selected
+    document.getElementById('project_id').addEventListener('change', function() {
+        const projectId = this.value;
+        if (!projectId) return;
+        
+        fetch(`/api/project/${projectId}/tasks`)
+            .then(response => response.json())
+            .then(data => {
+                const taskSelect = document.getElementById('task_id');
+                taskSelect.innerHTML = '<option value="">Select a task...</option>';
+                
+                data.tasks.forEach(task => {
+                    const option = document.createElement('option');
+                    option.value = task.id;
+                    option.textContent = task.title;
+                    taskSelect.appendChild(option);
+                });
+            });
+    });
+});
+</script>
+{% endblock %}

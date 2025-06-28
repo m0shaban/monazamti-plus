@@ -1,130 +1,338 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}لوحة التحكم{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card stats-card bg-primary text-white">
-            <div class="card-body">
-                <h3 class="card-title">{{ stats.total_projects if stats else 0 }}</h3>
-                <p class="card-text">Total Projects</p>
-                <i class="fas fa-project-diagram stats-icon"></i>
-            </div>
+<div class="container-fluid px-4 fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">مرحباً، {{ current_user.username }}</h1>
+        <div class="d-flex">
+            <a href="{{ url_for('main.projects') }}" class="btn btn-primary ms-2">
+                <i class="fas fa-project-diagram me-1"></i> المشاريع
+            </a>
+            <a href="{{ url_for('main.tasks') }}" class="btn btn-outline-primary">
+                <i class="fas fa-tasks me-1"></i> المهام
+            </a>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card stats-card bg-success text-white">
-            <div class="card-body">
-                <h3 class="card-title">{{ stats.completed_projects if stats else 0 }}</h3>
-                <p class="card-text">Completed Projects</p>
-                <i class="fas fa-check-circle stats-icon"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card stats-card bg-info text-white">
-            <div class="card-body">
-                <h3 class="card-title">{{ stats.total_tasks if stats else 0 }}</h3>
-                <p class="card-text">Total Tasks</p>
-                <i class="fas fa-tasks stats-icon"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card stats-card bg-warning text-white">
-            <div class="card-body">
-                <h3 class="card-title">{{ stats.overdue_tasks if stats else 0 }}</h3>
-                <p class="card-text">Overdue Tasks</p>
-                <i class="fas fa-clock stats-icon"></i>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-md-8">
-        <!-- Existing projects section with enhanced styling -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Your Projects</h5>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                        Sort by
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" data-sort="deadline">Deadline</a></li>
-                        <li><a class="dropdown-item" href="#" data-sort="priority">Priority</a></li>
-                        <li><a class="dropdown-item" href="#" data-sort="progress">Progress</a></li>
-                    </ul>
+    <!-- بطاقة النصائح الإدارية -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                                <i class="fas fa-lightbulb text-info fs-3"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="card-title">نصيحة اليوم <small class="fs-6 fw-normal text-muted">(نصائح لإدارة المشروعات)</small></h5>
+                            <p class="card-text mb-1" id="dashboard-advice-text"></p>
+                            <small class="text-muted" id="dashboard-advice-source"></small>
+                        </div>
+                        <div class="flex-shrink-0 ms-3 d-none d-lg-block">
+                            <button type="button" class="btn btn-sm btn-light" id="next-advice">
+                                <i class="fas fa-sync-alt me-1"></i> نصيحة أخرى
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="card-body">
-                {% if projects %}
-                    <div class="row row-cols-1 row-cols-md-2 g-4">
-                        {% for project in projects %}
-                        <div class="col">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ project.name }}</h5>
-                                    <p class="card-text">{{ project.description }}</p>
-                                    <div class="progress mb-3">
-                                        <div class="progress-bar progress-bar-custom" 
-                                             role="progressbar" 
-                                             data-progress="{{ project.progress }}%"
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100">
-                                        </div>
-                                    </div>
-                                    <a href="{{ url_for('main.project_detail', project_id=project.id) }}" 
-                                       class="btn btn-primary btn-sm">
-                                        View Details
-                                    </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-gradient-primary text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs text-white-50 mb-1">المشاريع النشطة</div>
+                        <div class="stat-value">12</div>
+                    </div>
+                    <i class="fas fa-project-diagram stat-icon"></i>
+                </div>
+                <div class="card-footer bg-transparent border-0 d-flex">
+                    <a href="{{ url_for('main.projects') }}" class="text-white text-decoration-none small stretched-link">
+                        عرض التفاصيل
+                        <i class="fas fa-arrow-left ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-gradient-success text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs text-white-50 mb-1">المهام المكتملة</div>
+                        <div class="stat-value">25</div>
+                    </div>
+                    <i class="fas fa-check-circle stat-icon"></i>
+                </div>
+                <div class="card-footer bg-transparent border-0 d-flex">
+                    <a href="{{ url_for('main.tasks') }}" class="text-white text-decoration-none small stretched-link">
+                        عرض التفاصيل
+                        <i class="fas fa-arrow-left ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-gradient-info text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs text-white-50 mb-1">المهام المتأخرة</div>
+                        <div class="stat-value">8</div>
+                    </div>
+                    <i class="fas fa-clock stat-icon"></i>
+                </div>
+                <div class="card-footer bg-transparent border-0 d-flex">
+                    <a href="{{ url_for('main.tasks') }}" class="text-white text-decoration-none small stretched-link">
+                        عرض التفاصيل
+                        <i class="fas fa-arrow-left ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-gradient-warning text-white mb-4">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-xs text-white-50 mb-1">المخاطر العالية</div>
+                        <div class="stat-value">3</div>
+                    </div>
+                    <i class="fas fa-exclamation-triangle stat-icon"></i>
+                </div>
+                <div class="card-footer bg-transparent border-0 d-flex">
+                    <a href="{{ url_for('main.risks_dashboard') }}" class="text-white text-decoration-none small stretched-link">
+                        عرض التفاصيل
+                        <i class="fas fa-arrow-left ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Projects -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">المشاريع الأخيرة</h5>
+                    <a href="{{ url_for('main.projects') }}" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">تطوير الموقع الإلكتروني</h6>
+                                <div class="text-muted small">تاريخ الانتهاء: 15-05-2024</div>
+                            </div>
+                            <span class="badge bg-success rounded-pill">85%</span>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">تحديث نظام المبيعات</h6>
+                                <div class="text-muted small">تاريخ الانتهاء: 30-06-2024</div>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">45%</span>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">تحسين تجربة المستخدم</h6>
+                                <div class="text-muted small">تاريخ الانتهاء: 10-07-2024</div>
+                            </div>
+                            <span class="badge bg-warning rounded-pill">30%</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activities -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">النشاطات الأخيرة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="timeline-icon bg-primary text-white">
+                                    <i class="fas fa-check"></i>
                                 </div>
-                                <div class="card-footer text-muted">
-                                    Status: <span class="badge bg-primary">{{ project.status }}</span>
+                                <div class="ms-3">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="fw-bold mb-0">تم اكتمال المهمة</h6>
+                                        <small class="text-muted">منذ ساعة</small>
+                                    </div>
+                                    <p class="mb-0">تصميم صفحة تسجيل الدخول</p>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="timeline-icon bg-info text-white">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="fw-bold mb-0">تعليق جديد</h6>
+                                        <small class="text-muted">منذ 3 ساعات</small>
+                                    </div>
+                                    <p class="mb-0">أحمد علق على مشروع "تطوير الموقع الإلكتروني"</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="timeline-icon bg-warning text-white">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="fw-bold mb-0">تحذير مهمة متأخرة</h6>
+                                        <small class="text-muted">منذ 5 ساعات</small>
+                                    </div>
+                                    <p class="mb-0">مهمة "إعداد قاعدة البيانات" تجاوزت الموعد النهائي</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                {% else %}
-                    <div class="alert alert-info">
-                        You don't have any projects yet. <a href="{{ url_for('main.create_project') }}">Create one</a> to get started!
-                    </div>
-                {% endif %}
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="col-md-4">
-        <h2>Your Tasks</h2>
-        
-        {% if tasks %}
-            <div class="list-group">
-                {% for task in tasks %}
-                <a href="{{ url_for('main.task_detail', task_id=task.id) }}" 
-                   class="list-group-item list-group-item-action">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h6 class="mb-1">{{ task.title }}</h6>
-                        <small class="text-muted">Due: {{ task.due_date.strftime('%Y-%m-%d') }}</small>
-                    </div>
-                    <small class="text-muted">
-                        Project: {{ task.project.name }}
-                    </small>
-                    <div class="mt-2">
-                        <span class="badge bg-{{ 'success' if task.status == 'Completed' else 'primary' }}">
-                            {{ task.status }}
-                        </span>
-                    </div>
-                </a>
-                {% endfor %}
+    
+    <!-- Tasks Chart -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">حالة المهام حسب المشروع</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="taskStatusChart" height="110"></canvas>
+                </div>
             </div>
-        {% else %}
-            <div class="alert alert-info">
-                No tasks assigned to you.
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add gradient backgrounds for stats cards
+    document.querySelectorAll('.bg-gradient-primary').forEach(el => {
+        el.style.background = 'linear-gradient(135deg, #4e73df 0%, #224abe 100%)';
+    });
+    
+    document.querySelectorAll('.bg-gradient-success').forEach(el => {
+        el.style.background = 'linear-gradient(135deg, #1cc88a 0%, #13855c 100%)';
+    });
+    
+    document.querySelectorAll('.bg-gradient-info').forEach(el => {
+        el.style.background = 'linear-gradient(135deg, #36b9cc 0%, #258391 100%)';
+    });
+    
+    document.querySelectorAll('.bg-gradient-warning').forEach(el => {
+        el.style.background = 'linear-gradient(135deg, #f6c23e 0%, #dda20a 100%)';
+    });
+    
+    // Create timeline icons
+    document.querySelectorAll('.timeline-icon').forEach(el => {
+        el.style.width = '40px';
+        el.style.height = '40px';
+        el.style.borderRadius = '50%';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+    });
+    
+    // Initialize Tasks Chart
+    const ctx = document.getElementById('taskStatusChart').getContext('2d');
+    const taskStatusChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['تطوير الموقع الإلكتروني', 'تحديث نظام المبيعات', 'تحسين تجربة المستخدم', 'تطبيق الهاتف المحمول'],
+            datasets: [
+                {
+                    label: 'مكتملة',
+                    data: [12, 8, 5, 3],
+                    backgroundColor: '#1cc88a',
+                },
+                {
+                    label: 'قيد التنفيذ',
+                    data: [5, 10, 6, 8],
+                    backgroundColor: '#4e73df',
+                },
+                {
+                    label: 'لم تبدأ',
+                    data: [3, 2, 9, 7],
+                    backgroundColor: '#858796',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: true,
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // مصفوفة النصائح مع المصادر
+    const advices = [
+        {
+            text: "البركة في التخطيط والعمل: اجعل الإتقان والإحسان منهجًا في إدارة مشاريعك.",
+            source: "قال رسول الله ﷺ: \"إن الله يحب إذا عمل أحدكم عملاً أن يتقنه\" (صحيح الجامع)"
+        },
+        {
+            text: "التوكل مع الأخذ بالأسباب: اتقِ الله في عملك وسترى البركة في مشروعك.",
+            source: "قال تعالى: \"وَمَنْ يَتَّقِ اللَّهَ يَجْعَلْ لَهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ\" (الطلاق: 2-3)"
+        },
+        {
+            text: "العدل والإنصاف في الإدارة: كن عادلاً ومنصفًا مع فريق العمل والعملاء.",
+            source: "قال النبي ﷺ: \"المسلم أخو المسلم، لا يظلمه ولا يسلمه\" (البخاري ومسلم)"
+        },
+        {
+            text: "تنظيم الوقت وأداء الأمانة: احرص على أداء مسؤولياتك بصدق وأمانة.",
+            source: "قال تعالى: \"إِنَّ اللَّهَ يَأْمُرُكُمْ أَنْ تُؤَدُّوا الْأَمَانَاتِ إِلَىٰ أَهْلِهَا\" (النساء: 58)"
+        },
+        {
+            text: "الاستشارة والتعاون: اطلب المشورة من أهل الخبرة، فالرأي السديد مفتاح النجاح.",
+            source: "قال تعالى: \"وَشَاوِرْهُمْ فِي الْأَمْرِ\" (آل عمران: 159)"
+        }
+    ];
+    
+    // وظيفة لعرض نصيحة عشوائية
+    function showRandomAdvice() {
+        const randomAdvice = advices[Math.floor(Math.random() * advices.length)];
+        document.getElementById('dashboard-advice-text').textContent = randomAdvice.text;
+        document.getElementById('dashboard-advice-source').textContent = randomAdvice.source;
+    }
+    
+    // عرض نصيحة عند تحميل الصفحة
+    showRandomAdvice();
+    
+    // إضافة زر لتغيير النصيحة
+    const nextAdviceBtn = document.getElementById('next-advice');
+    if (nextAdviceBtn) {
+        nextAdviceBtn.addEventListener('click', function() {
+            showRandomAdvice();
+        });
+    }
+});
+</script>
 {% endblock %}

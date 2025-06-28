@@ -6,44 +6,67 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0">Create New User</h4>
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Create New User</h5>
                 </div>
                 <div class="card-body">
                     <form method="POST">
+                        {{ form.hidden_tag() if form }}
+                        <!-- إضافة CSRF token -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        
                         <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="username" name="username" required>
                         </div>
+                        
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="email" name="email" required>
                         </div>
+                        
                         <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
+                            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
+                        
                         <div class="mb-3">
                             <label for="role" class="form-label">Role</label>
-                            <select class="form-select" id="role" name="role" required>
-                                <option value="{{ UserRole.TEAM_MEMBER }}">Team Member</option>
-                                <option value="{{ UserRole.PROJECT_MANAGER }}">Project Manager</option>
-                                <option value="{{ UserRole.ADMIN }}">Administrator</option>
+                            <select class="form-select" id="role" name="role">
+                                <option value="team_member">Team Member</option>
+                                <option value="project_manager">Project Manager</option>
+                                <option value="admin">Admin</option>
                             </select>
                         </div>
+                        
                         <div class="mb-3">
-                            <label for="department" class="form-label">Department</label>
-                            <select class="form-select" id="department" name="department_id">
+                            <label for="department_id" class="form-label">Department</label>
+                            <select class="form-select" id="department_id" name="department_id">
                                 <option value="">Select Department</option>
                                 {% for department in departments %}
                                 <option value="{{ department.id }}">{{ department.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Create User</button>
-                            <a href="{{ url_for('main.admin_users') }}" class="btn btn-secondary">Cancel</a>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Bio</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('main.admin_users') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-right"></i> Back to Users
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create User
+                            </button>
                         </div>
                     </form>
                 </div>

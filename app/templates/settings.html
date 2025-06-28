@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}الإعدادات{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">إعدادات الحساب</h2>
+    
+    {% if success_message %}
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        {{ success_message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group mb-4">
+                <a href="#account-settings" class="list-group-item list-group-item-action active" data-bs-toggle="list">إعدادات الحساب</a>
+                <a href="#notification-settings" class="list-group-item list-group-item-action" data-bs-toggle="list">إعدادات الإشعارات</a>
+                <a href="#appearance-settings" class="list-group-item list-group-item-action" data-bs-toggle="list">المظهر</a>
+                <a href="#security-settings" class="list-group-item list-group-item-action" data-bs-toggle="list">الأمان</a>
+                <a href="#data-settings" class="list-group-item list-group-item-action" data-bs-toggle="list">البيانات والخصوصية</a>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- Account Settings -->
+                <div class="tab-pane fade show active" id="account-settings">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">إعدادات الحساب</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('main.update_account_settings') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                <div class="mb-3">
+                                    <label class="form-label">اللغة</label>
+                                    <select class="form-select" name="language" title="اختر اللغة" aria-label="اللغة">
+                                        <option value="ar" {% if current_user.settings.language == 'ar' %}selected{% endif %}>العربية</option>
+                                        <option value="en" {% if current_user.settings.language == 'en' %}selected{% endif %}>English</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">المنطقة الزمنية</label>
+                                    <select class="form-select" name="timezone" title="اختر المنطقة الزمنية" aria-label="المنطقة الزمنية">
+                                        <option value="Africa/Cairo" {% if current_user.settings.timezone == 'Africa/Cairo' %}selected{% endif %}>(GMT+02:00) القاهرة</option>
+                                        <option value="Europe/London" {% if current_user.settings.timezone == 'Europe/London' %}selected{% endif %}>(GMT+00:00) لندن</option>
+                                        <option value="America/New_York" {% if current_user.settings.timezone == 'America/New_York' %}selected{% endif %}>(GMT-05:00) نيويورك</option>
+                                        <option value="Asia/Riyadh" {% if current_user.settings.timezone == 'Asia/Riyadh' %}selected{% endif %}>(GMT+03:00) الرياض</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="activityStatus" name="activity_status" value="1" {% if current_user.settings.show_activity_status %}checked{% endif %}>
+                                        <label class="form-check-label" for="activityStatus">عرض حالة النشاط للآخرين</label>
+                                    </div>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notification Settings -->
+                <div class="tab-pane fade" id="notification-settings">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">إعدادات الإشعارات</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('main.update_notification_settings') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                <h6 class="mb-3">إشعارات البريد الإلكتروني</h6>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="emailTaskAssigned" name="email_task_assigned" value="1" {% if current_user.settings.email_notifications.task_assigned %}checked{% endif %}>
+                                        <label class="form-check-label" for="emailTaskAssigned">عند إسناد مهمة جديدة لي</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="emailTaskUpdate" name="email_task_update" value="1" {% if current_user.settings.email_notifications.task_updated %}checked{% endif %}>
+                                        <label class="form-check-label" for="emailTaskUpdate">عند تحديث المهام المسندة لي</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="emailProjectUpdate" name="email_project_update" value="1" {% if current_user.settings.email_notifications.project_updated %}checked{% endif %}>
+                                        <label class="form-check-label" for="emailProjectUpdate">عند تحديث المشاريع</label>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mb-3 mt-4">إشعارات النظام</h6>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="sysTaskReminder" name="sys_task_reminder" value="1" {% if current_user.settings.system_notifications.task_reminder %}checked{% endif %}>
+                                        <label class="form-check-label" for="sysTaskReminder">تذكير بالمهام القادمة</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="sysComments" name="sys_comments" value="1" {% if current_user.settings.system_notifications.comments %}checked{% endif %}>
+                                        <label class="form-check-label" for="sysComments">التعليقات على المهام الخاصة بي</label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="sysMentions" name="sys_mentions" value="1" {% if current_user.settings.system_notifications.mentions %}checked{% endif %}>
+                                        <label class="form-check-label" for="sysMentions">عند الإشارة إلي (@username)</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Appearance Settings -->
+                <div class="tab-pane fade" id="appearance-settings">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">إعدادات المظهر</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('main.update_appearance_settings') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                <div class="mb-3">
+                                    <label class="form-label">المظهر</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="theme" id="themeLight" value="light" {% if current_user.settings.theme == 'light' %}checked{% endif %}>
+                                            <label class="form-check-label" for="themeLight">فاتح</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="theme" id="themeDark" value="dark" {% if current_user.settings.theme == 'dark' %}checked{% endif %}>
+                                            <label class="form-check-label" for="themeDark">داكن</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="theme" id="themeSystem" value="system" {% if current_user.settings.theme == 'system' %}checked{% endif %}>
+                                            <label class="form-check-label" for="themeSystem">حسب النظام</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">اللون الأساسي</label>
+                                    <div class="d-flex gap-2">
+                                        <div class="color-option {% if current_user.settings.primary_color == '4568dc' %}active{% endif %}" data-color="4568dc" style="background-color: #4568dc;"></div>
+                                        <div class="color-option {% if current_user.settings.primary_color == 'e83e8c' %}active{% endif %}" data-color="e83e8c" style="background-color: #e83e8c;"></div>
+                                        <div class="color-option {% if current_user.settings.primary_color == 'fd7e14' %}active{% endif %}" data-color="fd7e14" style="background-color: #fd7e14;"></div>
+                                        <div class="color-option {% if current_user.settings.primary_color == '20c997' %}active{% endif %}" data-color="20c997" style="background-color: #20c997;"></div>
+                                        <div class="color-option {% if current_user.settings.primary_color == '6f42c1' %}active{% endif %}" data-color="6f42c1" style="background-color: #6f42c1;"></div>
+                                    </div>
+                                    <input type="hidden" id="selectedColor" name="primary_color" value="{{ current_user.settings.primary_color or '4568dc' }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="compactMode" name="compact_mode" value="1" {% if current_user.settings.compact_mode %}checked{% endif %}>
+                                        <label class="form-check-label" for="compactMode">الوضع المضغوط للواجهة</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Security Settings -->
+                <div class="tab-pane fade" id="security-settings">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">الأمان</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="mb-3">تغيير كلمة المرور</h6>
+                            <form action="{{ url_for('main.update_password') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">كلمة المرور الحالية</label>
+                                    <input type="password" class="form-control" id="currentPassword" name="current_password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">كلمة المرور الجديدة</label>
+                                    <input type="password" class="form-control" id="newPassword" name="new_password" required>
+                                    <div class="form-text">يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل، وتتضمن أحرف كبيرة وصغيرة وأرقام.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">تأكيد كلمة المرور</label>
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">تغيير كلمة المرور</button>
+                                </div>
+                            </form>
+                            
+                            <hr class="my-4">
+                            
+                            <h6 class="mb-3">تسجيلات الدخول</h6>
+                            <p class="text-muted mb-3">آخر تسجيل دخول: {{ current_user.last_login_at.strftime('%Y-%m-%d %H:%M') if current_user.last_login_at else 'غير متوفر' }}</p>
+                            
+                            <form action="{{ url_for('main.logout_all_devices') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-outline-danger">تسجيل الخروج من جميع الأجهزة</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data & Privacy Settings -->
+                <div class="tab-pane fade" id="data-settings">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">البيانات والخصوصية</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <h6 class="mb-3">بياناتك</h6>
+                                <p>يمكنك طلب نسخة من بياناتك المخزنة في النظام.</p>
+                                <form action="{{ url_for('main.download_data') }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                    <button type="submit" class="btn btn-outline-primary">تنزيل بياناتي</button>
+                                </form>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <div class="mb-4">
+                                <h6 class="mb-3">حذف الحساب</h6>
+                                <p class="text-danger">تحذير: سيؤدي حذف حسابك إلى إزالة جميع بياناتك بشكل دائم من النظام.</p>
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                    حذف حسابي
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تأكيد حذف الحساب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+            </div>
+            <div class="modal-body">
+                <p>هل أنت متأكد من رغبتك في حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه وسيؤدي إلى فقدان جميع بياناتك.</p>
+                <form id="deleteAccountForm" action="{{ url_for('main.delete_account') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                    <div class="mb-3">
+                        <label for="deleteConfirm" class="form-label">اكتب "حذف" لتأكيد العملية</label>
+                        <input type="text" class="form-control" id="deleteConfirm" name="delete_confirm">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>حذف الحساب</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.color-option {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.color-option.active {
+    border-color: #000;
+}
+
+.list-group-item.active {
+    background-color: {{ current_user.settings.primary_color_hex or '#4568dc' }};
+    border-color: {{ current_user.settings.primary_color_hex or '#4568dc' }};
+}
+
+{% if current_user.settings.theme == 'dark' %}
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+.card {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.card-header {
+    background-color: #2a2a2a;
+}
+
+.form-control, .form-select {
+    background-color: #333;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #3a3a3a;
+    color: #fff;
+}
+
+.modal-content {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.text-muted {
+    color: #aaa !important;
+}
+
+.list-group-item {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+.list-group-item:hover {
+    background-color: #2a2a2a;
+}
+
+.btn-secondary {
+    background-color: #444;
+    border-color: #555;
+}
+{% endif %}
+
+{% if current_user.settings.compact_mode %}
+.card {
+    margin-bottom: 0.5rem;
+}
+.card-body {
+    padding: 0.75rem;
+}
+.mb-3 {
+    margin-bottom: 0.5rem !important;
+}
+.form-control, .form-select, .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+{% endif %}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Apply custom primary color to elements
+    const primaryColor = '{{ current_user.settings.primary_color_hex or "#4568dc" }}';
+    document.documentElement.style.setProperty('--bs-primary', primaryColor);
+    
+    // Handle theme color selection
+    document.querySelectorAll('.color-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.color-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            this.classList.add('active');
+            document.getElementById('selectedColor').value = this.getAttribute('data-color');
+        });
+    });
+    
+    // Handle delete account confirmation
+    const deleteConfirmInput = document.getElementById('deleteConfirm');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteAccountForm = document.getElementById('deleteAccountForm');
+    
+    deleteConfirmInput.addEventListener('input', function() {
+        confirmDeleteBtn.disabled = this.value !== 'حذف';
+    });
+    
+    confirmDeleteBtn.addEventListener('click', function() {
+        if (deleteConfirmInput.value === 'حذف') {
+            deleteAccountForm.submit();
+        }
+    });
+    
+    // Remember active tab
+    const activeTab = localStorage.getItem('settingsActiveTab');
+    if (activeTab) {
+        const tab = document.querySelector(`a[href="${activeTab}"]`);
+        if (tab) {
+            tab.click();
+        }
+    }
+    
+    // Save active tab
+    document.querySelectorAll('.list-group-item').forEach(item => {
+        item.addEventListener('click', function() {
+            localStorage.setItem('settingsActiveTab', this.getAttribute('href'));
+        });
+    });
+});
+</script>
+{% endblock %}

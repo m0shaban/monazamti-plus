@@ -1,2 +1,3 @@
 web: gunicorn run:app
-release: flask db upgrade && flask init-db
+
+## 4. إنشاء ملف Procfile للديبلويمنت

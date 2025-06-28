@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}Project Report{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Project Report: {{ project.name }}</h1>
+            <p class="lead">Analysis of project performance and key metrics</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <button class="btn btn-outline-secondary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn btn-outline-secondary" id="exportPDF">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button class="btn btn-outline-secondary" id="exportExcel">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Completion Rate</h5>
+                    <div class="progress-circle" data-value="{{ project.progress }}">
+                        <div class="progress-circle-value">{{ project.progress }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Budget Status</h5>
+                    <div class="progress-circle {{ 'danger' if project.budget_status|default(100) < 20 else 'warning' if project.budget_status|default(100) < 50 else 'success' }}"
+                         data-value="{{ project.budget_status|default(100) }}">
+                        <div class="progress-circle-value">{{ project.budget_status|default(100) }}%</div>
+                    </div>
+                    <div class="mt-2 small text-muted">
+                        {{ project.actual_cost }} / {{ project.budget }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Time Status</h5>
+                    <div class="progress-circle {{ 'danger' if project.time_status < 20 else 'warning' if project.time_status < 50 else 'success' }}"
+                         data-value="{{ project.time_status }}">
+                        <div class="progress-circle-value">{{ project.time_status }}%</div>
+                    </div>
+                    <div class="mt-2 small text-muted">
+                        {{ project.actual_hours }} / {{ project.estimated_hours }} hours
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Task Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="taskStatusChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Time Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="timeDistributionChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Task Progress</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" 
+                                data-bs-toggle="dropdown">
+                            Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">All Tasks</a></li>
+                            <li><a class="dropdown-item" href="#">Overdue</a></li>
+                            <li><a class="dropdown-item" href="#">Completed</a></li>
+                            <li><a class="dropdown-item" href="#">In Progress</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Assignee</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                    <th>Estimated Time</th>
+                                    <th>Actual Time</th>
+                                    <th>Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('main.task_detail', task_id=task.id) }}">
+                                            {{ task.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ task.assignee.username }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if task.status == 'Completed' 
+                                                                else 'warning' if task.status == 'In Progress' 
+                                                                else 'danger' if task.status == 'Blocked'
+                                                                else 'secondary' }}">
+                                            {{ task.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'Not Specified' }}
+                                        {% if task.due_date and task.due_date < now and task.status != 'Completed' %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ task.estimated_hours }} hours</td>
+                                    <td>{{ task.actual_hours }} hours</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ task_progress[task.id] }}%">
+                                                {{ task_progress[task.id] }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Risk Assessment</h5>
+                </div>
+                <div class="card-body">
+                    {% if risks %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Risk</th>
+                                    <th>Impact</th>
+                                    <th>Probability</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for risk in risks %}
+                                <tr>
+                                    <td>{{ risk.title }}</td>
+                                    <td>
+                                        <div class="rating">
+                                            {% for i in range(risk.impact) %}
+                                            <i class="fas fa-star"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="rating">
+                                            {% for i in range(risk.probability) %}
+                                            <i class="fas fa-star"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if risk.severity > 16 else 'warning' if risk.severity > 9 else 'info' }}">
+                                            {{ risk.severity }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if risk.status == 'Mitigated' 
+                                                                else 'secondary' if risk.status == 'Closed'
+                                                                else 'danger' }}">
+                                            {{ risk.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No risks recorded for this project.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Expenses and Costs</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="expensesChart" height="250"></canvas>
+                    
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between">
+                            <div>Total Costs:</div>
+                            <div><strong>{{ total_expenses }}</strong></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>Labor Costs:</div>
+                            <div><strong>{{ labor_costs }}</strong></div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <div>Other Expenses:</div>
+                            <div><strong>{{ other_expenses }}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Task Status Chart Data
+    const taskStatusLabels = ['Completed', 'In Progress', 'Not Started', 'Blocked'];
+    const taskStatusData = {{ task_status_data|tojson }};
+    const taskStatusColors = ['#1cc88a', '#4e73df', '#858796', '#e74a3b'];
+    
+    // Create Task Status Chart
+    const taskStatusCtx = document.getElementById('taskStatusChart').getContext('2d');
+    new Chart(taskStatusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: taskStatusLabels,
+            datasets: [{
+                data: taskStatusData,
+                backgroundColor: taskStatusColors,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+    
+    // Time Distribution Chart Data
+    const timeLabels = {{ time_labels|tojson }};
+    const timeData = {{ time_data|tojson }};
+    
+    // Create Time Distribution Chart
+    const timeCtx = document.getElementById('timeDistributionChart').getContext('2d');
+    new Chart(timeCtx, {
+        type: 'bar',
+        data: {
+            labels: timeLabels,
+            datasets: [{
+                label: 'Hours Spent',
+                data: timeData,
+                backgroundColor: '#4e73df',
+                borderColor: '#4e73df',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Expenses Chart Data
+    const expenseLabels = {{ expense_categories|tojson }};
+    const expenseData = {{ expense_values|tojson }};
+    const expenseColors = ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#5a5c69'];
+    
+    // Create Expenses Chart
+    const expensesCtx = document.getElementById('expensesChart').getContext('2d');
+    new Chart(expensesCtx, {
+        type: 'pie',
+        data: {
+            labels: expenseLabels,
+            datasets: [{
+                data: expenseData,
+                backgroundColor: expenseColors,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    });
+    
+    // Export Report as PDF
+    document.getElementById('exportPDF').addEventListener('click', function() {
+        alert('The report will be exported as PDF');
+        // Add code to export the report
+    });
+    
+    // Export Report as Excel
+    document.getElementById('exportExcel').addEventListener('click', function() {
+        alert('The report will be exported as Excel');
+        // Add code to export the report
+    });
+    
+    // Draw Progress Circles
+    document.querySelectorAll('.progress-circle').forEach(function(circle) {
+        const value = circle.dataset.value;
+        const radius = 70;
+        const circumference = 2 * Math.PI * radius;
+        
+        // Create SVG Element
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '150');
+        svg.setAttribute('height', '150');
+        svg.setAttribute('viewBox', '0 0 150 150');
+        
+        // Create Background Circle
+        const backgroundCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        backgroundCircle.setAttribute('cx', '75');
+        backgroundCircle.setAttribute('cy', '75');
+        backgroundCircle.setAttribute('r', radius);
+        backgroundCircle.setAttribute('fill', 'none');
+        backgroundCircle.setAttribute('stroke', '#f0f0f0');
+        backgroundCircle.setAttribute('stroke-width', '8');
+        
+        // Create Progress Circle
+        const progressCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        progressCircle.setAttribute('cx', '75');
+        progressCircle.setAttribute('cy', '75');
+        progressCircle.setAttribute('r', radius);
+        progressCircle.setAttribute('fill', 'none');
+        progressCircle.setAttribute('stroke', circle.classList.contains('danger') ? '#e74a3b' : 
+                                            circle.classList.contains('warning') ? '#f6c23e' : '#1cc88a');
+        progressCircle.setAttribute('stroke-width', '8');
+        progressCircle.setAttribute('stroke-dasharray', circumference);
+        progressCircle.setAttribute('stroke-dashoffset', circumference - (value / 100) * circumference);
+        progressCircle.setAttribute('transform', 'rotate(-90, 75, 75)');
+        
+        // Add Circles to SVG
+        svg.appendChild(backgroundCircle);
+        svg.appendChild(progressCircle);
+        
+        // Insert SVG before Value Element
+        circle.insertBefore(svg, circle.querySelector('.progress-circle-value'));
+    });
+});
+</script>
+{% endblock %}

@@ -1,305 +1,403 @@
 from datetime import datetime
+from flask_login import UserMixin
 from app import db, login_manager
-from flask_login import UserMixin, current_user
-from sqlalchemy import JSON  # Changed from ARRAY to JSON
+from enum import Enum
+from dataclasses import dataclass
+from app.utils.date_utils import utc_now
+from sqlalchemy import MetaData
+from werkzeug.security import check_password_hash, generate_password_hash
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+# Try to import Flask-Security; use fallbacks if not available
+try:
+    from flask_security import RoleMixin, SQLAlchemyUserDatastore, UserMixin as SecurityUserMixin
+    has_flask_security = True
+except ImportError:
+    # Provide fallback classes if Flask-Security is not installed
+    has_flask_security = False
+    
+    class RoleMixin:
+        """Fallback implementation of RoleMixin when Flask-Security is not available."""
+        pass
+    
+    class SQLAlchemyUserDatastore:
+        """Fallback implementation of SQLAlchemyUserDatastore when Flask-Security is not available."""
+        def __init__(self, *args, **kwargs):
+            pass
 
-class UserRole:
-    ADMIN = 'admin'
-    PROJECT_MANAGER = 'project_manager'
-    TEAM_MEMBER = 'team_member'
+# العلاقات بين الجداول
+project_followers = db.Table('project_followers',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id'), primary_key=True)
+)
 
-class User(db.Model, UserMixin):
+# تعريف أدوار المستخدمين
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    PROJECT_MANAGER = "project_manager"
+    TEAM_MEMBER = "team_member"
+    CLIENT = "client"
+
+class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
-    role = db.Column(db.String(20), default=UserRole.TEAM_MEMBER)
-    department_id = db.Column(db.Integer, db.ForeignKey('department.id', name='fk_user_department'))
-    reports_to = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_user_reports_to'))
-    avatar = db.Column(db.String(200))
-    phone = db.Column(db.String(20))
-    bio = db.Column(db.Text)
-    
-    # Relationships
-    projects = db.relationship('Project', backref='creator', lazy=True)
-    tasks = db.relationship('Task', 
-                          foreign_keys='Task.assigned_to',
-                          back_populates='assignee', 
-                          lazy=True)
-    reviewed_tasks = db.relationship('Task',
-                                   foreign_keys='Task.reviewer_id',
-                                   back_populates='reviewer',
-                                   lazy=True)
-    reviews_given = db.relationship('PerformanceReview',
-                                  foreign_keys='PerformanceReview.reviewer_id',
-                                  backref='reviewer',
-                                  lazy=True)
-    reviews_received = db.relationship('PerformanceReview',
-                                     foreign_keys='PerformanceReview.employee_id',
-                                     backref='employee',
-                                     lazy=True)
-    following_projects = db.relationship('ProjectFollower', 
-                                      back_populates='follower', 
-                                      lazy='dynamic')
-    team_memberships = db.relationship('TeamMember', backref='member', lazy=True)
-    subordinates = db.relationship('User', backref=db.backref('manager', remote_side=[id]))
-    
-    def has_role(self, role):
-        if self.role == UserRole.ADMIN:
-            return True
-        return self.role == role
+    name = db.Column(db.String(80), unique=True)
+    description = db.Column(db.String(255))
 
+class UserSettings(db.Model):
+    __tablename__ = 'user_settings'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', back_populates='settings')
+    
+    timezone = db.Column(db.String(50), default='UTC')
+    primary_color = db.Column(db.String(20), default='#4e73df')  # Add primary color field with default
+    language = db.Column(db.String(10), default='ar')
+    theme = db.Column(db.String(20), default='light')
+    compact_mode = db.Column(db.Boolean, default=False)
+    email_notifications = db.Column(db.Boolean, default=True)
+    push_notifications = db.Column(db.Boolean, default=True)
+    
+    # العلاقات
+    user = db.relationship('User', back_populates='settings')
+
+# نموذج المستخدم
+class User(db.Model, UserMixin):
+    __tablename__ = 'user'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), index=True, unique=True, nullable=False)
+    email = db.Column(db.String(120), index=True, unique=True, nullable=False)
+    password_hash = db.Column(db.String(128))
+    role = db.Column(db.String(20), default=UserRole.TEAM_MEMBER.value)
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    bio = db.Column(db.Text)
+    avatar = db.Column(db.String(200))
+    department_id = db.Column(db.Integer, db.ForeignKey('department.id', name='fk_user_department'))
+    phone = db.Column(db.String(20))
+    position = db.Column(db.String(100))
+    is_active = db.Column(db.Boolean, default=True)
+    last_login = db.Column(db.DateTime, default=utc_now)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    fs_uniquifier = db.Column(db.String(255), unique=True)
+    
+    # العلاقات
+    department = db.relationship('Department', foreign_keys=[department_id], backref=db.backref('members', lazy='dynamic'))
+    settings = db.relationship('UserSettings', back_populates='user', uselist=False, cascade='all, delete-orphan')
+    
+    # العلاقة مع المشاريع التي يتابعها المستخدم
+    following_projects = db.relationship(
+        'Project',
+        secondary=project_followers,
+        backref=db.backref('followers', lazy='dynamic'),
+        lazy='dynamic'
+    )
+    
+    # خصائص مشتقة لتسهيل التحقق من الأدوار
     @property
     def is_admin(self):
-        return self.role == UserRole.ADMIN
+        return self.role == UserRole.ADMIN.value
     
     @property
     def is_project_manager(self):
-        return self.role == UserRole.PROJECT_MANAGER or self.is_admin
-
-    @property
-    def unread_notifications_count(self):
-        return Notification.query.filter_by(user_id=self.id, read=False).count()
+        return self.role == UserRole.PROJECT_MANAGER.value
     
     @property
-    def recent_notifications(self):
-        return Notification.query.filter_by(user_id=self.id)\
-                               .order_by(Notification.created_at.desc())\
-                               .limit(5).all()
+    def is_team_member(self):
+        return self.role == UserRole.TEAM_MEMBER.value
+    
+    # إعادة تعريف دالة get_id لتوافق flask-security
+    def get_id(self):
+        return self.fs_uniquifier or str(self.id)
+    
+    # دالة للحصول على إعدادات المستخدم or إنشاءها
+    def get_or_create_settings(self):
+        if not self.settings:
+            self.settings = UserSettings(user_id=self.id)
+            db.session.add(self.settings)
+            db.session.commit()
+        return self.settings
 
+    def check_password(self, password):
+        """Verify the password against its hash."""
+        return check_password_hash(self.password_hash, password)
+    
+    def set_password(self, password):
+        """Generate password hash."""
+        self.password_hash = generate_password_hash(password)
+
+# جدول العلاقة بين الأدوار والمستخدمين
+roles_users = db.Table('roles_users',
+    db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
+    db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+)
+
+# نموذج القسم
 class Department(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    manager_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    employees = db.relationship('User', backref='department', lazy=True, 
-                              foreign_keys='User.department_id')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    manager_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_department_manager'))
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
-    manager = db.relationship('User', foreign_keys=[manager_id], backref='managed_departments')
+    # العلاقات
+    manager = db.relationship('User', foreign_keys=[manager_id], backref=db.backref('managed_departments', lazy='dynamic'))
+    projects = db.relationship('Project', back_populates='department')
 
-class DepartmentInvitation(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    department_id = db.Column(db.Integer, db.ForeignKey('department.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    manager_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    status = db.Column(db.String(20), default='pending')  # pending, accepted, rejected
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    department = db.relationship('Department', backref='invitations')
-    user = db.relationship('User', foreign_keys=[user_id], backref='department_invitations')
-    manager = db.relationship('User', foreign_keys=[manager_id], backref='sent_invitations')
-
+# نموذج المشروع
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    progress = db.Column(db.Integer, default=0)
-    status = db.Column(db.String(20), default='Active')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
-    tasks = db.relationship('Task', backref='project', lazy=True)
-    department_id = db.Column(db.Integer, db.ForeignKey('department.id'))
-    priority = db.Column(db.String(20), default='Medium')
-    deadline = db.Column(db.DateTime)
-    shared_with = db.Column(JSON, default=list)  # Changed from ARRAY to JSON
-    visible_to_all_department = db.Column(db.Boolean, default=True)
-    comments = db.relationship('Comment', backref='project', lazy='dynamic', 
-                             foreign_keys='Comment.project_id', 
-                             cascade='all, delete-orphan')
-    ratings = db.relationship('Rating', backref='rated_project', lazy='dynamic', 
-                            foreign_keys='Rating.project_id', 
-                            cascade='all, delete-orphan')
-    followers = db.relationship('ProjectFollower', backref='followed_project', 
-                              lazy='dynamic', cascade='all, delete-orphan')
-    teams = db.relationship('Team', backref='project', lazy=True)
-    department = db.relationship('Department', backref='projects')
-
-    def update_progress(self):
-        if not self.tasks:
-            return 0
-        completed_tasks = sum(1 for task in self.tasks if task.status == 'Completed')
-        self.progress = int((completed_tasks / len(self.tasks)) * 100)
-        db.session.commit()
-    
-    def is_visible_to(self, user):
-        return (user.is_admin or 
-                user.id == self.created_by or
-                user.id == self.department.manager_id or
-                user.id in self.shared_with or
-                (self.visible_to_all_department and user.department_id == self.department_id))
-
-class Team(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
-    members = db.relationship('TeamMember', backref='team', lazy=True)
+    status = db.Column(db.String(50), default='Active')
+    priority = db.Column(db.String(20), default='Medium')
+    progress = db.Column(db.Integer, default=0)  # نسبة مئوية للتقدم
+    start_date = db.Column(db.DateTime)
+    deadline = db.Column(db.DateTime)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    department_id = db.Column(db.Integer, db.ForeignKey('department.id'))
+    client_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    budget = db.Column(db.Float, default=0)
+    estimated_hours = db.Column(db.Float, default=0)
+    tags = db.Column(db.String(255))
+    visible_to_all_department = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # العلاقات
+    creator = db.relationship('User', foreign_keys=[created_by], backref='created_projects')
+    client = db.relationship('User', foreign_keys=[client_id], backref='client_projects')
+    department = db.relationship('Department', back_populates='projects')
+    tasks = db.relationship('Task', back_populates='project', cascade='all, delete-orphan')
+    risks = db.relationship('RiskAssessment', back_populates='project', cascade='all, delete-orphan')
+    time_entries = db.relationship('TimeEntry', back_populates='project', cascade='all, delete-orphan')
+    
+    # حساب نسبة استخدام الميزانية المتبقية
+    @property
+    def budget_status(self):
+        """حساب وإرجاع نسبة الميزانية المستهلكة or المتبقية"""
+        if not hasattr(self, 'budget') or not self.budget or self.budget <= 0:
+            return 100  # إذا لم يكن هناك ميزانية، نفترض أن كل شيء على ما يرام
+        
+        # حساب إجمالي التكاليف من سجلات الوقت
+        total_costs = sum(entry.calculate_cost() for entry in self.time_entries)
+        
+        # حساب النسبة المئوية للميزانية المتبقية
+        budget_used_percentage = (total_costs / self.budget) * 100
+        remaining_percentage = max(0, 100 - budget_used_percentage)
+        
+        return round(remaining_percentage)
+    
+    # حساب نسبة الوقت المتبقي
+    @property
+    def time_status(self):
+        if not hasattr(self, 'estimated_hours') or not self.estimated_hours or self.estimated_hours <= 0:
+            return 100
+        
+        actual_hours = sum(entry.duration or 0 for entry in self.time_entries)
+        time_used_percentage = (actual_hours / self.estimated_hours) * 100
+        remaining_percentage = max(0, 100 - time_used_percentage)
+        
+        return round(remaining_percentage)
+    
+    # حساب التكلفة الفعلية
+    @property
+    def actual_cost(self):
+        return sum(entry.calculate_cost() for entry in self.time_entries)
+    
+    # حساب ساعات العمل الفعلية
+    @property
+    def actual_hours(self):
+        return sum(entry.duration or 0 for entry in self.time_entries)
+    
+    def calculate_budget_status(self):
+        """Calculate budget status as percentage"""
+        if not hasattr(self, 'budget') or not self.budget or self.budget <= 0:
+            return 100
 
-class TeamMember(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    team_id = db.Column(db.Integer, db.ForeignKey('team.id', name='fk_member_team'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_member_user'))
-    role = db.Column(db.String(50))
-    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+        # ...existing code...
 
-class PerformanceReview(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    employee_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_performance_review_employee'))
-    reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_performance_review_reviewer'))
-    period_start = db.Column(db.DateTime)
-    period_end = db.Column(db.DateTime)
-    rating = db.Column(db.Integer)  # 1-5 scale
-    comments = db.Column(db.Text)
-    goals_achieved = db.Column(db.Text)
-    areas_improvement = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def get_budget_warnings(self):
+        """Get budget-related warnings"""
+        warnings = []
+        if not self.budget or self.budget <= 0:
+            warnings.append("No budget set")
+        elif self.calculate_cost() > self.budget:
+            warnings.append("Over budget")
+        return warnings
 
+    @property
+    def is_over_budget(self):
+        """Check if project is over budget"""
+        if not self.budget or self.budget <= 0:
+            return False
+        return self.calculate_cost() > self.budget
+
+    def validate_task(self):
+        if not self.title or not self.project_id:
+            return False
+        # ...existing code...
+
+    def check_status(self):
+        if self.active or self.verified or self.balance > 0:
+            return True
+        # ...existing code...
+
+    def validate_budget(self):
+        """Validate project budget"""
+        if not hasattr(self, 'budget') or not self.budget or self.budget <= 0:
+            return False
+        return True
+
+    def validate_dates(self):
+        """Validate project dates"""
+        if not self.start_date or not self.deadline or self.start_date >= self.deadline:
+            return False
+        return True
+
+    def validate_estimated_hours(self):
+        """Validate estimated hours"""
+        if not hasattr(self, 'estimated_hours') or not self.estimated_hours or self.estimated_hours <= 0:
+            return False
+        return True
+
+    def calculate_actual_hours(self):
+        """Calculate actual hours"""
+        actual_hours = sum(entry.duration or 0 for entry in self.time_entries)
+        return actual_hours
+
+    def get_unique_identifier(self):
+        """Return a unique identifier for the user."""
+        return self.fs_uniquifier or str(self.id)
+
+    def is_active_and_verified(self):
+        """Check if the user is active and verified"""
+        if self.active and self.verified and self.balance > 0:
+            return True
+        return False
+
+    def calculate_total_duration(self):
+        """Calculate total duration"""
+        return sum(entry.duration or 0 for entry in self.time_entries)
+
+    def calculate_average_rating(self, ratings):
+        """Calculate average rating"""
+        if not ratings or len(ratings) == 0:
+            return 0
+        return sum(ratings) / len(ratings)
+
+    def validate_task(self):
+        """Validate task"""
+        if not self.title or not self.project_id:
+            return False
+        return True
+
+# نموذج المهام
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(20), default='Not Started')
-    due_date = db.Column(db.DateTime)
-    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_task_assignee'))
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    description = db.Column(db.Text)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    status = db.Column(db.String(50), default='Not Started')
     priority = db.Column(db.String(20), default='Medium')
-    eisenhower_tasks = db.relationship('EisenhowerTask', backref='task', 
-                                     lazy='dynamic',
-                                     cascade='all, delete-orphan')
-    comments = db.relationship('Comment', backref='task', lazy='dynamic', 
-                             foreign_keys='Comment.task_id', cascade='all, delete-orphan')
-    ratings = db.relationship('Rating', backref='rated_task', lazy='dynamic', 
-                            foreign_keys='Rating.task_id', cascade='all, delete-orphan')
-    dependencies = db.relationship('TaskDependency', 
-                                 foreign_keys='TaskDependency.task_id',
-                                 backref='dependent_task', 
-                                 lazy=True)
-    milestone_id = db.Column(db.Integer, db.ForeignKey('project_milestone.id', name='fk_task_milestone'))
-    review_status = db.Column(db.String(20), default='Pending')  # Pending, Approved, Rejected
-    reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_task_reviewer'))
-    review_comment = db.Column(db.Text)
-    assignee = db.relationship('User', foreign_keys=[assigned_to], back_populates='tasks')
-    reviewer = db.relationship('User', foreign_keys=[reviewer_id], back_populates='reviewed_tasks')
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    assigned_to = db.Column(db.Integer, db.ForeignKey('user.id'))
+    due_date = db.Column(db.DateTime)
+    estimated_hours = db.Column(db.Float, default=0)
+    importance = db.Column(db.Integer, default=2)  # لمصفوفة آيزنهاور: 1=مهم جدًا، 4=أقل أهمية
+    require_evidence = db.Column(db.Boolean, default=False)
+    is_recurring = db.Column(db.Boolean, default=False)
+    tags = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # العلاقات
+    project = db.relationship('Project', back_populates='tasks')
+    creator = db.relationship('User', foreign_keys=[created_by], backref='created_tasks')
+    assignee = db.relationship('User', foreign_keys=[assigned_to], backref='assigned_tasks')
+    time_entries = db.relationship('TimeEntry', back_populates='task', cascade='all, delete-orphan')
+    
+    # حساب ساعات العمل الفعلية
     @property
-    def eisenhower_classification(self):
-        """Get the current classification"""
-        return self.eisenhower_tasks.first()
-
-    def update_status(self, new_status):
-        self.status = new_status
-        self.project.update_progress()
-        
-        history = TaskHistory(
-            task_id=self.id,
-            old_status=self.status,
-            new_status=new_status,
-            changed_by=current_user.id
-        )
-        db.session.add(history)
-        db.session.commit()
-
+    def actual_hours(self):
+        return sum(entry.duration or 0 for entry in self.time_entries)
+    
+    # حساب متوسط التقييم
     @property
     def average_rating(self):
-        ratings = [r.score for r in self.ratings]
-        return sum(ratings) / len(ratings) if ratings else 0
+        ratings = TaskRating.query.filter_by(task_id=self.id).all()
+        if not ratings or len(ratings) == 0:
+            return 0
+        return sum(r.score for r in ratings) / len(ratings)
 
-class TaskHistory(db.Model):
+# نموذج تقييم المهام
+class TaskRating(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
-    old_status = db.Column(db.String(20))
-    new_status = db.Column(db.String(20))
-    changed_at = db.Column(db.DateTime, default=datetime.utcnow)
-    changed_by = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_task_history_user'))
-    task = db.relationship('Task', backref='history', lazy=True)
-    user = db.relationship('User', backref='task_changes', lazy=True, foreign_keys=[changed_by])
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    score = db.Column(db.Integer, nullable=False)  # تقييم من 1-5
+    feedback = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # العلاقات
+    task = db.relationship('Task', backref=db.backref('ratings', lazy='dynamic'))
+    user = db.relationship('User', backref=db.backref('task_ratings', lazy='dynamic'))
 
-class EisenhowerTask(db.Model):
+# نموذج تسجيل الوقت
+class TimeEntry(db.Model):
+    __tablename__ = 'time_entry'
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
-    quadrant = db.Column(db.String(20), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship('User', backref='eisenhower_tasks')
-
-class Comment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_comment_user'), nullable=False)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id', name='fk_comment_task'), nullable=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id', name='fk_comment_project'), nullable=True)
-    user = db.relationship('User', backref='comments', foreign_keys=[user_id])
-
-class Rating(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    score = db.Column(db.Integer, nullable=False)  # 1-5 stars
-    feedback = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_rating_user'), nullable=False)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id', name='fk_rating_task'), nullable=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id', name='fk_rating_project'), nullable=True)
-    user = db.relationship('User', backref='ratings', foreign_keys=[user_id])
-
-class ProjectFollower(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_follower_user'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    notification_level = db.Column(db.String(20), default='all')  # all, major, none
-    __table_args__ = (db.UniqueConstraint('user_id', 'project_id', name='uq_project_follower'),)
-    follower = db.relationship('User', back_populates='following_projects', foreign_keys=[user_id])
-
-class ProjectStakeholder(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id', name='fk_stakeholder_project'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', name='fk_stakeholder_user'))
-    role = db.Column(db.String(50))
-    influence_level = db.Column(db.String(20))
-
-class ProjectMilestone(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
-    title = db.Column(db.String(100))
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
     description = db.Column(db.Text)
-    due_date = db.Column(db.DateTime)
-    completed = db.Column(db.Boolean, default=False)
-    weight = db.Column(db.Integer, default=1)  # Importance weight for progress calculation
+    start_time = db.Column(db.DateTime, default=utc_now)
+    end_time = db.Column(db.DateTime)
+    duration = db.Column(db.Float)  # بالساعات
+    billable = db.Column(db.Boolean, default=True)
+    hourly_rate = db.Column(db.Float, default=0)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # العلاقات
+    user = db.relationship('User', backref=db.backref('time_entries', lazy='dynamic'))
+    project = db.relationship('Project', back_populates='time_entries')
+    task = db.relationship('Task', back_populates='time_entries')
+    
+    # حساب التكلفة
+    def calculate_cost(self):
+        """Calculate the cost of the time entry."""
+        return self.duration * self.hourly_rate if self.billable else 0  # Fixed Arabic 'إذا'
 
-class Notification(db.Model):
+# نموذج تقييم المخاطر
+class RiskAssessment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    title = db.Column(db.String(100))
-    message = db.Column(db.Text)
-    type = db.Column(db.String(20))  # task, project, review, etc.
-    read = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    link = db.Column(db.String(200))  # URL to related resource
-    user = db.relationship('User', backref='notifications')
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    impact = db.Column(db.Integer, default=3)  # من 1 إلى 5
+    probability = db.Column(db.Integer, default=3)  # من 1 إلى 5
+    status = db.Column(db.String(50), default='Open')
+    mitigation_plan = db.Column(db.Text)
+    contingency_plan = db.Column(db.Text)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+    
+    # العلاقات
+    project = db.relationship('Project', back_populates='risks')
+    creator = db.relationship('User', backref='risk_assessments')
+    
+    # حساب شدة الخطر
+    @property
+    def severity(self):
+        return self.impact * self.probability
 
-class AdminNotification(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100))
-    content = db.Column(db.Text)
-    type = db.Column(db.String(50))  # department_created, invitation_sent, invitation_accepted, etc.
-    read = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    related_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    related_dept_id = db.Column(db.Integer, db.ForeignKey('department.id'))
-    related_user = db.relationship('User', backref='admin_notifications')
-    related_department = db.relationship('Department')
-
-class TaskDependency(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id', name='fk_dependency_task'))
-    dependency_id = db.Column(db.Integer, db.ForeignKey('task.id', name='fk_dependency_depends_on'))
-    dependency_type = db.Column(db.String(20))  # Start-to-Start, Finish-to-Start, etc.
-    __table_args__ = (
-        db.UniqueConstraint('task_id', 'dependency_id', name='uq_task_dependency'),
-    )
+# دالة تحميل المستخدم لـ flask-login
+@login_manager.user_loader
+def load_user(user_id):
+    # Fix missing parenthesis in query
+    return User.query.filter_by(fs_uniquifier=user_id).first()

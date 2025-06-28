@@ -1,0 +1,1012 @@
+{% extends "base.html" %}
+
+{% block title %}دليل استخدام النظام{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- رأس الصفحة مع صورة خلفية -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <div class="bg-light p-5 rounded-lg shadow-sm mb-4" style="background: linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url({{ url_for('static', filename='img/header-bg.jpg') }}) center/cover;">
+                <h1 class="display-4 fw-bold text-primary">منظمتي بلس</h1>
+                <p class="lead">دليل شامل لاستخدام النظام بأقصى فعالية</p>
+                <hr class="my-4">
+                <p>تعلم كيفية إدارة المشاريع، وتتبع المهام، وتنظيم فريق العمل بطريقة احترافية</p>
+                <a href="#started" class="btn btn-primary btn-lg">ابدأ الآن <i class="fas fa-arrow-circle-down ms-2"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- قائمة المحتويات الجانبية -->
+        <div class="col-md-3 mb-4">
+            <div class="list-group sticky-top" style="top: 2rem;">
+                <a href="#started" class="list-group-item list-group-item-action">البداية السريعة</a>
+                <a href="#features" class="list-group-item list-group-item-action">الميزات الرئيسية</a>
+                <a href="#projects" class="list-group-item list-group-item-action">إدارة المشاريع</a>
+                <a href="#tasks" class="list-group-item list-group-item-action">إدارة المهام</a>
+                <a href="#team" class="list-group-item list-group-item-action">إدارة الفريق</a>
+                <a href="#reports" class="list-group-item list-group-item-action">التقارير</a>
+                <a href="#time" class="list-group-item list-group-item-action">إدارة الوقت</a>
+                <a href="#risks" class="list-group-item list-group-item-action">إدارة المخاطر</a>
+                <a href="#tips" class="list-group-item list-group-item-action">نصائح وحيل</a>
+                <a href="#faq" class="list-group-item list-group-item-action">الأسئلة الشائعة</a>
+            </div>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div class="col-md-9">
+            <!-- البداية السريعة -->
+            <section id="started" class="mb-5">
+                <div class="rounded p-4 mb-4 bg-primary bg-opacity-10 border-start border-5 border-primary">
+                    <h2 class="text-primary border-bottom pb-2">البداية السريعة</h2>
+                    <p class="lead">دليل خطوة بخطوة للبدء في استخدام النظام:</p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex mb-3">
+                                    <div class="step-circle bg-primary text-white">1</div>
+                                    <h4 class="ms-3 mt-1">تسجيل الدخول</h4>
+                                </div>
+                                <p>سجل دخولك باستخدام اسم المستخدم وكلمة المرور التي حصلت عليها من مدير النظام.</p>
+                                <ul class="styled-list">
+                                    <li>ادخل اسم المستخدم</li>
+                                    <li>ادخل كلمة المرور</li>
+                                    <li>انقر على زر "تسجيل الدخول"</li>
+                                </ul>
+                                <img src="{{ url_for('static', filename='app/static/img/login.png') }}" alt="شاشة تسجيل الدخول" class="img-fluid rounded mt-2 border">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex mb-3">
+                                    <div class="step-circle bg-primary text-white">2</div>
+                                    <h4 class="ms-3 mt-1">استكشاف لوحة التحكم</h4>
+                                </div>
+                                <p>لوحة التحكم هي الشاشة الرئيسية للنظام وتعرض نظرة عامة على مشاريعك ومهامك.</p>
+                                <ul class="styled-list">
+                                    <li>تحقق من المشاريع النشطة</li>
+                                    <li>راجع المهام المسندة إليك</li>
+                                    <li>استخدم المؤشرات لمتابعة التقدم</li>
+                                </ul>
+                                <img src="{{ url_for('static', filename='img/user-guide/dashboard.png') }}" alt="لوحة التحكم" class="img-fluid rounded mt-2 border">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex mb-3">
+                                    <div class="step-circle bg-primary text-white">3</div>
+                                    <h4 class="ms-3 mt-1">إنشاء مشروع جديد</h4>
+                                </div>
+                                <p>يمكنك إنشاء مشروع جديد وتعيين المهام والفريق وتحديد جدول زمني له.</p>
+                                <ul class="styled-list">
+                                    <li>انقر على "مشروع جديد" من لوحة التحكم</li>
+                                    <li>املأ بيانات المشروع المطلوبة</li>
+                                    <li>انقر على "إنشاء المشروع"</li>
+                                </ul>
+                                <img src="{{ url_for('static', filename='img/user-guide/new-project.png') }}" alt="إنشاء مشروع جديد" class="img-fluid rounded mt-2 border">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex mb-3">
+                                    <div class="step-circle bg-primary text-white">4</div>
+                                    <h4 class="ms-3 mt-1">إدارة المهام</h4>
+                                </div>
+                                <p>أنشئ مهام ضمن مشروعك وقم بتعيينها لأعضاء الفريق مع تحديد مواعيد الاستحقاق.</p>
+                                <ul class="styled-list">
+                                    <li>انتقل إلى صفحة المشروع</li>
+                                    <li>انقر على "إضافة مهمة جديدة"</li>
+                                    <li>حدد الأولوية وتاريخ الاستحقاق</li>
+                                </ul>
+                                <img src="{{ url_for('static', filename='img/user-guide/tasks.png') }}" alt="إدارة المهام" class="img-fluid rounded mt-2 border">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- الميزات الرئيسية -->
+            <section id="features" class="mb-5">
+                <div class="rounded p-4 mb-4 bg-success bg-opacity-10 border-start border-5 border-success">
+                    <h2 class="text-success border-bottom pb-2">الميزات الرئيسية</h2>
+                    <p class="lead">استكشف الإمكانيات المتقدمة التي يوفرها النظام لإدارة المشاريع بكفاءة:</p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="feature-card text-center p-4 h-100">
+                            <div class="feature-icon bg-primary bg-opacity-10 text-primary mx-auto mb-3">
+                                <i class="fas fa-project-diagram fa-2x"></i>
+                            </div>
+                            <h4>إدارة المشاريع</h4>
+                            <p>إنشاء وتنظيم المشاريع مع تتبع مؤشرات الأداء الرئيسية والميزانيات والجداول الزمنية.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="feature-card text-center p-4 h-100">
+                            <div class="feature-icon bg-success bg-opacity-10 text-success mx-auto mb-3">
+                                <i class="fas fa-tasks fa-2x"></i>
+                            </div>
+                            <h4>إدارة المهام</h4>
+                            <p>تنظيم المهام بمرونة مع إمكانية تعيين المسؤوليات وتحديد الأولويات والمواعيد النهائية.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="feature-card text-center p-4 h-100">
+                            <div class="feature-icon bg-info bg-opacity-10 text-info mx-auto mb-3">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                            <h4>إدارة الفريق</h4>
+                            <p>تنظيم فريق العمل في أقسام وإدارة الصلاحيات ومتابعة الأداء والإنتاجية.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="feature-card text-center p-4 h-100">
+                            <div class="feature-icon bg-warning bg-opacity-10 text-warning mx-auto mb-3">
+                                <i class="fas fa-chart-bar fa-2x"></i>
+                            </div>
+                            <h4>التقارير والتحليلات</h4>
+                            <p>تقارير تفصيلية تساعد في اتخاذ القرارات مع تحليلات مرئية للبيانات وتتبع التقدم.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="feature-card text-center p-4 h-100">
+                            <div class="feature-icon bg-danger bg-opacity-10 text-danger mx-auto mb-3">
+                                <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                            <h4>إدارة المخاطر</h4>
+                            <p>تحديد وتقييم المخاطر المحتملة ووضع خطط للتخفيف والاستجابة ومتابعة المخاطر.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="feature-card text-center p-4 h-100">
+                            <div class="feature-icon bg-secondary bg-opacity-10 text-secondary mx-auto mb-3">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                            <h4>تتبع الوقت</h4>
+                            <p>تسجيل ساعات العمل وحساب التكاليف مع تقارير تفصيلية للإنتاجية وتقييم الأداء.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- إدارة المشاريع -->
+            <section id="projects" class="mb-5">
+                <div class="rounded p-4 mb-4 bg-info bg-opacity-10 border-start border-5 border-info">
+                    <h2 class="text-info border-bottom pb-2">إدارة المشاريع</h2>
+                    <p class="lead">كيفية إنشاء وإدارة المشاريع بكفاءة عالية:</p>
+                </div>
+                
+                <div class="accordion" id="projectsAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCreateProject">
+                                إنشاء مشروع جديد
+                            </button>
+                        </h2>
+                        <div id="collapseCreateProject" class="accordion-collapse collapse show" data-bs-parent="#projectsAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">الخطوات:</h5>
+                                        <ol class="guide-list">
+                                            <li>انتقل إلى صفحة "المشاريع" من القائمة الجانبية.</li>
+                                            <li>انقر على زر "إنشاء مشروع جديد".</li>
+                                            <li>أدخل اسم المشروع والوصف والقسم المسؤول.</li>
+                                            <li>حدد أولوية المشروع والموعد النهائي.</li>
+                                            <li>انقر على زر "إنشاء المشروع" لحفظ التغييرات.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            <strong>نصيحة:</strong> اختر اسماً دقيقاً ووصفاً واضحاً للمشروع ليسهل على الفريق فهم نطاق العمل.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/create-project.jpg') }}" alt="إنشاء مشروع" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseManageProject">
+                                إدارة بيانات المشروع
+                            </button>
+                        </h2>
+                        <div id="collapseManageProject" class="accordion-collapse collapse" data-bs-parent="#projectsAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تحديث معلومات المشروع:</h5>
+                                        <ol class="guide-list">
+                                            <li>افتح صفحة المشروع بالنقر على اسمه في قائمة المشاريع.</li>
+                                            <li>انقر على زر "تعديل المشروع" في أعلى الصفحة.</li>
+                                            <li>قم بتحديث البيانات المطلوبة.</li>
+                                            <li>لتغيير حالة المشروع، اختر من القائمة المنسدلة (نشط، معلق، مكتمل).</li>
+                                            <li>لتحديث نسبة التقدم، استخدم شريط التقدم.</li>
+                                            <li>انقر على "حفظ التغييرات" عند الانتهاء.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/edit-project.jpg') }}" alt="تعديل المشروع" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <strong>تنبيه:</strong> تأكد من تحديث نسبة الإنجاز بشكل دوري لعرض التقدم الفعلي للمشروع.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProjectTeam">
+                                إدارة فريق المشروع
+                            </button>
+                        </h2>
+                        <div id="collapseProjectTeam" class="accordion-collapse collapse" data-bs-parent="#projectsAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تعيين فريق العمل:</h5>
+                                        <ol class="guide-list">
+                                            <li>من صفحة المشروع، انتقل إلى تبويب "فريق العمل".</li>
+                                            <li>انقر على "إضافة عضو جديد".</li>
+                                            <li>ابحث عن المستخدم واختر دوره في المشروع.</li>
+                                            <li>حدد نطاق مسؤولياته ومستوى الصلاحيات.</li>
+                                            <li>انقر على "إضافة" لتعيين العضو للمشروع.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>معلومة:</strong> يمكنك تعيين أدوار مختلفة للأعضاء مثل مدير المشروع، محلل، مطور، مصمم، إلخ.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/project-team.jpg') }}" alt="فريق المشروع" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم المهام -->
+            <section id="tasks" class="mb-5">
+                <div class="rounded p-4 mb-4 bg-warning bg-opacity-10 border-start border-5 border-warning">
+                    <h2 class="text-warning border-bottom pb-2">إدارة المهام</h2>
+                    <p class="lead">كيفية إنشاء وإدارة المهام بكفاءة عالية:</p>
+                </div>
+                
+                <div class="accordion" id="tasksAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCreateTask">
+                                إنشاء مهمة جديدة
+                            </button>
+                        </h2>
+                        <div id="collapseCreateTask" class="accordion-collapse collapse show" data-bs-parent="#tasksAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">الخطوات:</h5>
+                                        <ol class="guide-list">
+                                            <li>انتقل إلى صفحة "المهام" من القائمة الجانبية.</li>
+                                            <li>انقر على زر "إنشاء مهمة جديدة".</li>
+                                            <li>حدد المشروع المرتبط بالمهمة.</li>
+                                            <li>أدخل اسم المهمة والوصف.</li>
+                                            <li>حدد أولوية المهمة وتاريخ الاستحقاق.</li>
+                                            <li>انقر على زر "إنشاء المهمة" لحفظ التغييرات.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            <strong>نصيحة:</strong> اختر اسماً دقيقاً ووصفاً واضحاً للمهمة ليسهل على الفريق فهم نطاق العمل.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/create-task.jpg') }}" alt="إنشاء مهمة" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseManageTask">
+                                إدارة بيانات المهمة
+                            </button>
+                        </h2>
+                        <div id="collapseManageTask" class="accordion-collapse collapse" data-bs-parent="#tasksAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تحديث معلومات المهمة:</h5>
+                                        <ol class="guide-list">
+                                            <li>افتح صفحة المهمة بالنقر على اسمها في قائمة المهام.</li>
+                                            <li>انقر على زر "تعديل المهمة" في أعلى الصفحة.</li>
+                                            <li>قم بتحديث البيانات المطلوبة.</li>
+                                            <li>لتغيير حالة المهمة، اختر من القائمة المنسدلة (لم يبدأ، قيد التنفيذ، مكتمل).</li>
+                                            <li>لتحديث نسبة التقدم، استخدم شريط التقدم.</li>
+                                            <li>انقر على "حفظ التغييرات" عند الانتهاء.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/edit-task.jpg') }}" alt="تعديل المهمة" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <strong>تنبيه:</strong> تأكد من تحديث نسبة الإنجاز بشكل دوري لعرض التقدم الفعلي للمهمة.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTaskTeam">
+                                إدارة فريق المهمة
+                            </button>
+                        </h2>
+                        <div id="collapseTaskTeam" class="accordion-collapse collapse" data-bs-parent="#tasksAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تعيين فريق العمل:</h5>
+                                        <ol class="guide-list">
+                                            <li>من صفحة المهمة، انتقل إلى تبويب "فريق العمل".</li>
+                                            <li>انقر على "إضافة عضو جديد".</li>
+                                            <li>ابحث عن المستخدم واختر دوره في المهمة.</li>
+                                            <li>حدد نطاق مسؤولياته ومستوى الصلاحيات.</li>
+                                            <li>انقر على "إضافة" لتعيين العضو للمهمة.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>معلومة:</strong> يمكنك تعيين أدوار مختلفة للأعضاء مثل مدير المهمة، محلل، مطور، مصمم، إلخ.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/task-team.jpg') }}" alt="فريق المهمة" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم الفريق -->
+            <section id="team" class="mb-5">
+                <div class="rounded p-4 mb-4 bg-danger bg-opacity-10 border-start border-5 border-danger">
+                    <h2 class="text-danger border-bottom pb-2">إدارة الفريق</h2>
+                    <p class="lead">كيفية تنظيم وإدارة فريق العمل بكفاءة عالية:</p>
+                </div>
+                
+                <div class="accordion" id="teamAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCreateTeam">
+                                إنشاء فريق جديد
+                            </button>
+                        </h2>
+                        <div id="collapseCreateTeam" class="accordion-collapse collapse show" data-bs-parent="#teamAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">الخطوات:</h5>
+                                        <ol class="guide-list">
+                                            <li>انتقل إلى صفحة "الفريق" من القائمة الجانبية.</li>
+                                            <li>انقر على زر "إنشاء فريق جديد".</li>
+                                            <li>أدخل اسم الفريق والوصف.</li>
+                                            <li>حدد أعضاء الفريق وأدوارهم.</li>
+                                            <li>انقر على زر "إنشاء الفريق" لحفظ التغييرات.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            <strong>نصيحة:</strong> اختر اسماً دقيقاً ووصفاً واضحاً للفريق ليسهل على الأعضاء فهم نطاق العمل.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/create-team.jpg') }}" alt="إنشاء فريق" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseManageTeam">
+                                إدارة بيانات الفريق
+                            </button>
+                        </h2>
+                        <div id="collapseManageTeam" class="accordion-collapse collapse" data-bs-parent="#teamAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تحديث معلومات الفريق:</h5>
+                                        <ol class="guide-list">
+                                            <li>افتح صفحة الفريق بالنقر على اسمه في قائمة الفرق.</li>
+                                            <li>انقر على زر "تعديل الفريق" في أعلى الصفحة.</li>
+                                            <li>قم بتحديث البيانات المطلوبة.</li>
+                                            <li>لتغيير حالة الفريق، اختر من القائمة المنسدلة (نشط، معلق، مكتمل).</li>
+                                            <li>لتحديث نسبة التقدم، استخدم شريط التقدم.</li>
+                                            <li>انقر على "حفظ التغييرات" عند الانتهاء.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/edit-team.jpg') }}" alt="تعديل الفريق" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <strong>تنبيه:</strong> تأكد من تحديث نسبة الإنجاز بشكل دوري لعرض التقدم الفعلي للفريق.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTeamMembers">
+                                إدارة أعضاء الفريق
+                            </button>
+                        </h2>
+                        <div id="collapseTeamMembers" class="accordion-collapse collapse" data-bs-parent="#teamAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تعيين أعضاء الفريق:</h5>
+                                        <ol class="guide-list">
+                                            <li>من صفحة الفريق، انتقل إلى تبويب "أعضاء الفريق".</li>
+                                            <li>انقر على "إضافة عضو جديد".</li>
+                                            <li>ابحث عن المستخدم واختر دوره في الفريق.</li>
+                                            <li>حدد نطاق مسؤولياته ومستوى الصلاحيات.</li>
+                                            <li>انقر على "إضافة" لتعيين العضو للفريق.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>معلومة:</strong> يمكنك تعيين أدوار مختلفة للأعضاء مثل مدير الفريق، محلل، مطور، مصمم، إلخ.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/team-members.jpg') }}" alt="أعضاء الفريق" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم التقارير -->
+            <section id="reports" class="mb-5">
+                <div class="rounded p-4 mb-4 bg-success bg-opacity-10 border-start border-5 border-success">
+                    <h2 class="text-success border-bottom pb-2">التقارير</h2>
+                    <p class="lead">كيفية إنشاء وعرض التقارير بكفاءة عالية:</p>
+                </div>
+                
+                <div class="accordion" id="reportsAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCreateReport">
+                                إنشاء تقرير جديد
+                            </button>
+                        </h2>
+                        <div id="collapseCreateReport" class="accordion-collapse collapse show" data-bs-parent="#reportsAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">الخطوات:</h5>
+                                        <ol class="guide-list">
+                                            <li>انتقل إلى صفحة "التقارير" من القائمة الجانبية.</li>
+                                            <li>انقر على زر "إنشاء تقرير جديد".</li>
+                                            <li>حدد نوع التقرير (مشاريع، مهام، فريق، وقت).</li>
+                                            <li>اختر البيانات التي ترغب في تضمينها في التقرير.</li>
+                                            <li>انقر على زر "إنشاء التقرير" لحفظ التغييرات.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            <strong>نصيحة:</strong> اختر البيانات التي تعكس أداء الفريق والمشاريع بشكل دقيق.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/create-report.jpg') }}" alt="إنشاء تقرير" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseManageReport">
+                                إدارة بيانات التقرير
+                            </button>
+                        </h2>
+                        <div id="collapseManageReport" class="accordion-collapse collapse" data-bs-parent="#reportsAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تحديث معلومات التقرير:</h5>
+                                        <ol class="guide-list">
+                                            <li>افتح صفحة التقرير بالنقر على اسمه في قائمة التقارير.</li>
+                                            <li>انقر على زر "تعديل التقرير" في أعلى الصفحة.</li>
+                                            <li>قم بتحديث البيانات المطلوبة.</li>
+                                            <li>لتغيير حالة التقرير، اختر من القائمة المنسدلة (نشط، معلق، مكتمل).</li>
+                                            <li>لتحديث نسبة التقدم، استخدم شريط التقدم.</li>
+                                            <li>انقر على "حفظ التغييرات" عند الانتهاء.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/edit-report.jpg') }}" alt="تعديل التقرير" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <strong>تنبيه:</strong> تأكد من تحديث نسبة الإنجاز بشكل دوري لعرض التقدم الفعلي للتقرير.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReportTeam">
+                                إدارة فريق التقرير
+                            </button>
+                        </h2>
+                        <div id="collapseReportTeam" class="accordion-collapse collapse" data-bs-parent="#reportsAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تعيين فريق العمل:</h5>
+                                        <ol class="guide-list">
+                                            <li>من صفحة التقرير، انتقل إلى تبويب "فريق العمل".</li>
+                                            <li>انقر على "إضافة عضو جديد".</li>
+                                            <li>ابحث عن المستخدم واختر دوره في التقرير.</li>
+                                            <li>حدد نطاق مسؤولياته ومستوى الصلاحيات.</li>
+                                            <li>انقر على "إضافة" لتعيين العضو للتقرير.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>معلومة:</strong> يمكنك تعيين أدوار مختلفة للأعضاء مثل مدير التقرير، محلل، مطور، مصمم، إلخ.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/report-team.jpg') }}" alt="فريق التقرير" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم إدارة الوقت -->
+            <section id="time" class="mb-5">
+                <div class="rounded p-4 mb-4 bg-primary bg-opacity-10 border-start border-5 border-primary">
+                    <h2 class="text-primary border-bottom pb-2">إدارة الوقت</h2>
+                    <p class="lead">كيفية تتبع وإدارة الوقت بكفاءة عالية:</p>
+                </div>
+                
+                <div class="accordion" id="timeAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCreateTime">
+                                تسجيل وقت جديد
+                            </button>
+                        </h2>
+                        <div id="collapseCreateTime" class="accordion-collapse collapse show" data-bs-parent="#timeAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">الخطوات:</h5>
+                                        <ol class="guide-list">
+                                            <li>انتقل إلى صفحة "إدارة الوقت" من القائمة الجانبية.</li>
+                                            <li>انقر على زر "تسجيل وقت جديد".</li>
+                                            <li>حدد المشروع المرتبط بالوقت.</li>
+                                            <li>أدخل وقت البدء والانتهاء.</li>
+                                            <li>أدخل وصفاً للعمل المنجز.</li>
+                                            <li>انقر على زر "تسجيل الوقت" لحفظ التغييرات.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            <strong>نصيحة:</strong> اختر وصفاً دقيقاً للعمل المنجز ليسهل على الفريق فهم نطاق العمل.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/create-time.jpg') }}" alt="تسجيل وقت" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseManageTime">
+                                إدارة بيانات الوقت
+                            </button>
+                        </h2>
+                        <div id="collapseManageTime" class="accordion-collapse collapse" data-bs-parent="#timeAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تحديث معلومات الوقت:</h5>
+                                        <ol class="guide-list">
+                                            <li>افتح صفحة الوقت بالنقر على اسمه في قائمة الأوقات.</li>
+                                            <li>انقر على زر "تعديل الوقت" في أعلى الصفحة.</li>
+                                            <li>قم بتحديث البيانات المطلوبة.</li>
+                                            <li>لتغيير حالة الوقت، اختر من القائمة المنسدلة (نشط، معلق، مكتمل).</li>
+                                            <li>لتحديث نسبة التقدم، استخدم شريط التقدم.</li>
+                                            <li>انقر على "حفظ التغييرات" عند الانتهاء.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/edit-time.jpg') }}" alt="تعديل الوقت" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <strong>تنبيه:</strong> تأكد من تحديث نسبة الإنجاز بشكل دوري لعرض التقدم الفعلي للوقت.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTimeTeam">
+                                إدارة فريق الوقت
+                            </button>
+                        </h2>
+                        <div id="collapseTimeTeam" class="accordion-collapse collapse" data-bs-parent="#timeAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تعيين فريق العمل:</h5>
+                                        <ol class="guide-list">
+                                            <li>من صفحة الوقت، انتقل إلى تبويب "فريق العمل".</li>
+                                            <li>انقر على "إضافة عضو جديد".</li>
+                                            <li>ابحث عن المستخدم واختر دوره في الوقت.</li>
+                                            <li>حدد نطاق مسؤولياته ومستوى الصلاحيات.</li>
+                                            <li>انقر على "إضافة" لتعيين العضو للوقت.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>معلومة:</strong> يمكنك تعيين أدوار مختلفة للأعضاء مثل مدير الوقت، محلل، مطور، مصمم، إلخ.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/time-team.jpg') }}" alt="فريق الوقت" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قسم إدارة المخاطر -->
+            <section id="risks" class="mb-5">
+                <div class="rounded p-4 mb-4 bg-danger bg-opacity-10 border-start border-5 border-danger">
+                    <h2 class="text-danger border-bottom pb-2">إدارة المخاطر</h2>
+                    <p class="lead">كيفية تحديد وتقييم وإدارة المخاطر بكفاءة عالية:</p>
+                </div>
+                
+                <div class="accordion" id="risksAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCreateRisk">
+                                إنشاء خطر جديد
+                            </button>
+                        </h2>
+                        <div id="collapseCreateRisk" class="accordion-collapse collapse show" data-bs-parent="#risksAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">الخطوات:</h5>
+                                        <ol class="guide-list">
+                                            <li>انتقل إلى صفحة "إدارة المخاطر" من القائمة الجانبية.</li>
+                                            <li>انقر على زر "إنشاء خطر جديد".</li>
+                                            <li>حدد المشروع المرتبط بالخطر.</li>
+                                            <li>أدخل اسم الخطر والوصف.</li>
+                                            <li>حدد أولوية الخطر وتاريخ الاستحقاق.</li>
+                                            <li>انقر على زر "إنشاء الخطر" لحفظ التغييرات.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-lightbulb me-2"></i>
+                                            <strong>نصيحة:</strong> اختر وصفاً دقيقاً للخطر ليسهل على الفريق فهم نطاق العمل.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/create-risk.jpg') }}" alt="إنشاء خطر" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseManageRisk">
+                                إدارة بيانات الخطر
+                            </button>
+                        </h2>
+                        <div id="collapseManageRisk" class="accordion-collapse collapse" data-bs-parent="#risksAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تحديث معلومات الخطر:</h5>
+                                        <ol class="guide-list">
+                                            <li>افتح صفحة الخطر بالنقر على اسمه في قائمة المخاطر.</li>
+                                            <li>انقر على زر "تعديل الخطر" في أعلى الصفحة.</li>
+                                            <li>قم بتحديث البيانات المطلوبة.</li>
+                                            <li>لتغيير حالة الخطر، اختر من القائمة المنسدلة (نشط، معلق، مكتمل).</li>
+                                            <li>لتحديث نسبة التقدم، استخدم شريط التقدم.</li>
+                                            <li>انقر على "حفظ التغييرات" عند الانتهاء.</li>
+                                        </ol>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/edit-risk.jpg') }}" alt="تعديل الخطر" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                        <div class="alert alert-warning mt-3">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <strong>تنبيه:</strong> تأكد من تحديث نسبة الإنجاز بشكل دوري لعرض التقدم الفعلي للخطر.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRiskTeam">
+                                إدارة فريق الخطر
+                            </button>
+                        </h2>
+                        <div id="collapseRiskTeam" class="accordion-collapse collapse" data-bs-parent="#risksAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold mb-3">تعيين فريق العمل:</h5>
+                                        <ol class="guide-list">
+                                            <li>من صفحة الخطر، انتقل إلى تبويب "فريق العمل".</li>
+                                            <li>انقر على "إضافة عضو جديد".</li>
+                                            <li>ابحث عن المستخدم واختر دوره في الخطر.</li>
+                                            <li>حدد نطاق مسؤولياته ومستوى الصلاحيات.</li>
+                                            <li>انقر على "إضافة" لتعيين العضو للخطر.</li>
+                                        </ol>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            <strong>معلومة:</strong> يمكنك تعيين أدوار مختلفة للأعضاء مثل مدير الخطر، محلل، مطور، مصمم، إلخ.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="tutorial-image">
+                                            <img src="{{ url_for('static', filename='img/guide/risk-team.jpg') }}" alt="فريق الخطر" class="img-fluid rounded shadow-sm border">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- الأسئلة الشائعة -->
+            <section id="faq" class="mb-5">
+                <div class="rounded p-4 mb-4 bg-secondary bg-opacity-10 border-start border-5 border-secondary">
+                    <h2 class="text-secondary border-bottom pb-2">الأسئلة الشائعة</h2>
+                    <p class="lead">إجابات على الأسئلة المتكررة حول استخدام النظام:</p>
+                </div>
+                
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqOne">
+                                كيف يمكنني تغيير كلمة المرور الخاصة بي؟
+                            </button>
+                        </h2>
+                        <div id="faqOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <ol>
+                                    <li>انقر على اسم المستخدم في أعلى القائمة الجانبية.</li>
+                                    <li>اختر "الإعدادات" من القائمة المنسدلة.</li>
+                                    <li>انتقل إلى تبويب "الأمان".</li>
+                                    <li>أدخل كلمة المرور الحالية وكلمة المرور الجديدة مرتين.</li>
+                                    <li>انقر على "تغيير كلمة المرور" لحفظ التغييرات.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwo">
+                                هل يمكنني تصدير بيانات المشروع إلى ملف؟
+                            </button>
+                        </h2>
+                        <div id="faqTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>نعم، يمكنك تصدير بيانات المشروع بعدة طرق:</p>
+                                <ul>
+                                    <li>من صفحة المشروع، انقر على "تصدير" في أعلى الصفحة.</li>
+                                    <li>اختر التنسيق المطلوب (Excel، PDF، CSV).</li>
+                                    <li>حدد البيانات التي ترغب في تضمينها في الملف المصدّر.</li>
+                                    <li>انقر على "تصدير" لتنزيل الملف.</li>
+                                </ul>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    <strong>ملاحظة:</strong> يمكنك أيضاً تصدير المهام فقط أو التقارير المالية فقط من الصفحات المخصصة لها.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- المزيد من الأسئلة الشائعة -->
+                    <!-- ...existing code... -->
+                </div>
+            </section>
+
+            <!-- حقوق الملكية -->
+            <section id="copyright" class="mt-5 mb-4 text-center">
+                <div class="card border-0 bg-light p-4">
+                    <div class="card-body">
+                        <h3 class="mb-3 fw-bold">© 2025 جميع الحقوق محفوظة</h3>
+                        <h4 class="text-primary mb-4">المهندس محمد شعبان</h4>
+                        <p class="lead mb-4">تم تطوير هذا النظام بكل جهد وحب</p>
+                        <h5 class="text-primary mb-4">فلا تحرموني من دعوة صادقة بالتيسير والقبول</h5>
+                        
+                        <div class="row justify-content-center mt-4">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <i class="fas fa-envelope me-2 text-primary"></i>
+                                    <span>eng.mohamed0shaban@gmail.com</span>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-phone me-2 text-primary"></i>
+                                    <span>+201121891913</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.25rem;
+}
+
+.styled-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.styled-list li {
+    padding-left: 25px;
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.styled-list li:before {
+    content: "✓";
+    color: var(--bs-primary);
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: bold;
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature-card {
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.guide-list li {
+    margin-bottom: 12px;
+}
+
+.tutorial-image {
+    position: relative;
+    padding: 3px;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.fade-in {
+    animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}

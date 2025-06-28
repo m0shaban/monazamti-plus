@@ -1,61 +1,116 @@
 # Project Management System
 
-نظام إدارة مشاريع متكامل مبني بواسطة Flask
+A comprehensive project management system built with Flask, allowing teams to manage projects, tasks, time tracking, and team collaboration efficiently.
 
-## المميزات الرئيسية
+## Features
 
-- إدارة المشاريع والمهام
-- مصفوفة أيزنهاور لترتيب أولويات المهام
-- إدارة الفرق والأقسام
-- لوحة تحكم للمدراء
-- إشعارات وتقارير متقدمة
+- Multi-user project management
+- Task assignment and tracking
+- Time logging and reporting
+- Risk assessment
+- Department and team management
+- Admin dashboard for system management
 
-## متطلبات التشغيل
+## Installation
 
-- Python 3.13+
-- Flask
-- SQLAlchemy
-- Database (SQLite للتطوير، PostgreSQL للإنتاج)
+1. Clone the repository
+2. Create a virtual environment:
+   ```
+   python -m venv venv
+   venv\Scripts\activate  # Windows
+   source venv/bin/activate  # Linux/Mac
+   ```
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+4. Initialize the database:
+   ```
+   flask db upgrade
+   python db_fix.py  # Apply database fixes if needed
+   ```
+5. Run the application:
+   ```
+   flask run
+   ```
 
-## كيفية التثبيت
+## Database Maintenance
+
+This project includes several utilities for database management:
+
+- `db_fix.py`: Fixes common database issues and relationship problems
+- `verify_db.py`: Verifies database integrity
+- `scan_arabic_operators.py`: Scans codebase for Arabic logical operators (و, أو)
+
+### Common Database Issues
+
+If you encounter database-related errors:
+
+1. Run database verification:
+   ```
+   python verify_db.py
+   ```
+
+2. Apply database fixes:
+   ```
+   python db_fix.py
+   ```
+
+3. If issues persist, you may need to:
+   - Delete the database file (`instance/site.db`)
+   - Run migrations:
+     ```
+     flask db upgrade
+     ```
+   - Re-run the database fix script:
+     ```
+     python db_fix.py
+     ```
+
+## Database Migrations
+
+### Regular Migration Commands
+
+For normal database updates:
 
 ```bash
-# استنساخ المستودع
-git clone https://github.com/yourusername/project-management.git
+# Create a new migration
+flask db migrate -m "Description of changes"
 
-# إنشاء بيئة افتراضية
-python -m venv venv
-source venv/bin/activate  # لينكس/ماك
-venv\Scripts\activate     # ويندوز
-
-# تثبيت المتطلبات
-pip install -r requirements.txt
-
-# تهيئة قاعدة البيانات
+# Apply pending migrations
 flask db upgrade
-flask init-db
-
-# تشغيل التطبيق
-flask run
 ```
 
-## الواجهات الرئيسية
+### Troubleshooting Migration Issues
 
-1. **لوحة التحكم**: عرض المشاريع والمهام الحالية
-2. **إدارة المشاريع**: إنشاء وتعديل وحذف المشاريع
-3. **إدارة المهام**: تنظيم المهام وتحديد حالتها
-4. **مصفوفة أيزنهاور**: ترتيب المهام حسب الأهمية والإلحاح
-5. **إدارة الفريق**: دعوة أعضاء وإدارة الأقسام
+If you encounter migration errors:
 
-## المساهمة في المشروع
+1. **Multiple head revisions error**:
+   ```bash
+   python fix_migrations.py
+   flask db upgrade
+   ```
 
-نرحب بمساهماتكم! يرجى اتباع الخطوات التالية:
-1. انشاء fork للمشروع
-2. إنشاء فرع جديد: `git checkout -b feature-name`
-3. الالتزام بتغييراتك: `git commit -m 'إضافة ميزة جديدة'`
-4. رفع الفرع: `git push origin feature-name`
-5. إنشاء طلب سحب
+2. **Database not up to date error**:
+   ```bash
+   flask db upgrade
+   ```
 
-## الترخيص
+3. **Reset admin password**:
+   ```bash
+   python reset_admin.py
+   ```
 
-هذا المشروع مرخص تحت رخصة MIT - انظر ملف LICENSE للتفاصيل
+See the [Migration Troubleshooting Guide](docs/MIGRATION_TROUBLESHOOTING.md) for more details.
+
+## Development Guidelines
+
+- Follow PEP 8 style guidelines
+- Write docstrings for all functions and classes
+- Use English for all code comments and variable names
+- Always use English logical operators (`and`, `or`) instead of Arabic ones (و, أو)
+- Run tests before submitting changes
+
+## License
+
+Copyright © 2025 - All rights reserved

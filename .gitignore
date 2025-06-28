@@ -1,15 +1,54 @@
-*.pyc
+# Python bytecode
 __pycache__/
-instance/
-.env
-.venv
+*.py[cod]
+*$py.class
+
+# Virtual environment
 venv/
+env/
 ENV/
-*.sqlite
+
+# Local environment variables
+.env
+
+# Database files
+*.db
+instance/
+# Backup DB files
+instance/*.bak
+
+# Flask stuff
+.webassets-cache
+.flaskenv
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
 .DS_Store
-.pytest_cache/
-.coverage
-htmlcov/
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Distribution / packaging
 dist/
 build/
 *.egg-info/
+
+# Alembic
+migrations/__pycache__/
+migrations/versions/__pycache__/
+
+# Other
+*.pyo
+*.pyd

@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+
+{% block title %}Risk Management - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Risk Management</h1>
+            <p class="lead">{{ project.name }}</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRiskModal">
+            <i class="fas fa-plus"></i> Add New Risk
+        </button>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Risk Register</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">All Risks</a></li>
+                            <li><a class="dropdown-item" href="#">Open Risks</a></li>
+                            <li><a class="dropdown-item" href="#">Mitigated</a></li>
+                            <li><a class="dropdown-item" href="#">Closed</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if risks %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Impact</th>
+                                    <th>Probability</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Mitigation Plan</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for risk in risks %}
+                                <tr class="{{ 'table-danger' if risk.severity > 16 else 'table-warning' if risk.severity > 9 else '' }}">
+                                    <td>{{ risk.title }}</td>
+                                    <td>{{ risk.description|truncate(50) }}</td>
+                                    <td>
+                                        <div class="rating">
+                                            {% for i in range(1, 6) %}
+                                            <i class="fas fa-star {{ 'text-warning' if i <= risk.impact else 'text-muted' }}"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="rating">
+                                            {% for i in range(1, 6) %}
+                                            <i class="fas fa-star {{ 'text-warning' if i <= risk.probability else 'text-muted' }}"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if risk.severity > 16 else 'warning' if risk.severity > 9 else 'info' }}">
+                                            {{ risk.severity }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if risk.status == 'Mitigated' 
+                                                                else 'secondary' if risk.status == 'Closed'
+                                                                else 'danger' }}">
+                                            {{ risk.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ risk.mitigation_plan|truncate(50) }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#editRiskModal"
+                                                    data-risk-id="{{ risk.id }}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteRiskModal"
+                                                    data-risk-id="{{ risk.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <p class="text-muted">No risks recorded yet</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRiskModal">
+                            <i class="fas fa-plus"></i> Add New Risk
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Risk Matrix</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="risk-matrix">
+                        <div class="risk-row">
+                            <div class="risk-label">5</div>
+                            <div class="risk-cell medium" id="risk-matrix-5-1"></div>
+                            <div class="risk-cell high" id="risk-matrix-5-2"></div>
+                            <div class="risk-cell high" id="risk-matrix-5-3"></div>
+                            <div class="risk-cell extreme" id="risk-matrix-5-4"></div>
+                            <div class="risk-cell extreme" id="risk-matrix-5-5"></div>
+                        </div>
+                        <div class="risk-row">
+                            <div class="risk-label">4</div>
+                            <div class="risk-cell medium" id="risk-matrix-4-1"></div>
+                            <div class="risk-cell medium" id="risk-matrix-4-2"></div>
+                            <div class="risk-cell high" id="risk-matrix-4-3"></div>
+                            <div class="risk-cell high" id="risk-matrix-4-4"></div>
+                            <div class="risk-cell extreme" id="risk-matrix-4-5"></div>
+                        </div>
+                        <div class="risk-row">
+                            <div class="risk-label">3</div>
+                            <div class="risk-cell low" id="risk-matrix-3-1"></div>
+                            <div class="risk-cell medium" id="risk-matrix-3-2"></div>
+                            <div class="risk-cell medium" id="risk-matrix-3-3"></div>
+                            <div class="risk-cell high" id="risk-matrix-3-4"></div>
+                            <div class="risk-cell high" id="risk-matrix-3-5"></div>
+                        </div>
+                        <div class="risk-row">
+                            <div class="risk-label">2</div>
+                            <div class="risk-cell low" id="risk-matrix-2-1"></div>
+                            <div class="risk-cell low" id="risk-matrix-2-2"></div>
+                            <div class="risk-cell medium" id="risk-matrix-2-3"></div>
+                            <div class="risk-cell medium" id="risk-matrix-2-4"></div>
+                            <div class="risk-cell high" id="risk-matrix-2-5"></div>
+                        </div>
+                        <div class="risk-row">
+                            <div class="risk-label">1</div>
+                            <div class="risk-cell low" id="risk-matrix-1-1"></div>
+                            <div class="risk-cell low" id="risk-matrix-1-2"></div>
+                            <div class="risk-cell low" id="risk-matrix-1-3"></div>
+                            <div class="risk-cell medium" id="risk-matrix-1-4"></div>
+                            <div class="risk-cell medium" id="risk-matrix-1-5"></div>
+                        </div>
+                        <div class="risk-row">
+                            <div class="risk-label"></div>
+                            <div class="risk-label">1</div>
+                            <div class="risk-label">2</div>
+                            <div class="risk-label">3</div>
+                            <div class="risk-label">4</div>
+                            <div class="risk-label">5</div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Probability</span>
+                            <span>Impact</span>
+                        </div>
+                    </div>
+                    <div class="risk-legend mt-3 d-flex justify-content-center">
+                        <div class="d-flex align-items-center me-3">
+                            <div class="risk-color low me-1"></div>
+                            <div>Low</div>
+                        </div>
+                        <div class="d-flex align-items-center me-3">
+                            <div class="risk-color medium me-1"></div>
+                            <div>Medium</div>
+                        </div>
+                        <div class="d-flex align-items-center me-3">
+                            <div class="risk-color high me-1"></div>
+                            <div>High</div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="risk-color extreme me-1"></div>
+                            <div>Extreme</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Risk Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="riskDistributionChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Risk Modal -->
+<div class="modal fade" id="addRiskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Risk</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.add_risk', project_id=project.id) }}">
+                <!-- إضافة CSRF token -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="Open">Open</option>
+                                <option value="Mitigated">Mitigated</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="impact" class="form-label">Impact (1-5)</label>
+                            <select class="form-select" id="impact" name="impact" required>
+                                <option value="1">1 - Very Low</option>
+                                <option value="2">2 - Low</option>
+                                <option value="3">3 - Medium</option>
+                                <option value="4">4 - High</option>
+                                <option value="5">5 - Very High</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="probability" class="form-label">Probability (1-5)</label>
+                            <select class="form-select" id="probability" name="probability" required>
+                                <option value="1">1 - Very Rare</option>
+                                <option value="2">2 - Unlikely</option>
+                                <option value="3">3 - Possible</option>
+                                <option value="4">4 - Likely</option>
+                                <option value="5">5 - Almost Certain</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mitigation_plan" class="form-label">Mitigation Plan</label>
+                        <textarea class="form-control" id="mitigation_plan" name="mitigation_plan" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contingency_plan" class="form-label">Contingency Plan</label>
+                        <textarea class="form-control" id="contingency_plan" name="contingency_plan" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.risk-matrix {
+    display: inline-block;
+    border: 1px solid #ccc;
+    margin: 1rem 0;
+}
+
+.risk-row {
+    display: flex;
+}
+
+.risk-label {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.risk-cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #fff;
+    position: relative;
+}
+
+.risk-marker {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #000;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.risk-color {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+}
+
+.low {
+    background-color: #1cc88a;
+}
+
+.medium {
+    background-color: #f6c23e;
+}
+
+.high {
+    background-color: #fd7e14;
+}
+
+.extreme {
+    background-color: #e74a3b;
+}
+
+.rating {
+    color: #f6c23e;
+}
+
+.text-warning {
+    color: #f6c23e !important;
+}
+
+.text-muted {
+    color: #d1d3e2 !important;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // إعداد الرسم البياني لتوزيع المخاطر
+    const ctx = document.getElementById('riskDistributionChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Extreme Risks', 'High Risks', 'Medium Risks', 'Low Risks'],
+            datasets: [{
+                data: [
+                    {{ risks|selectattr('severity', '>', 16)|list|length }},
+                    {{ risks|selectattr('severity', '>', 9)|selectattr('severity', '<=', 16)|list|length }},
+                    {{ risks|selectattr('severity', '>', 4)|selectattr('severity', '<=', 9)|list|length }},
+                    {{ risks|selectattr('severity', '<=', 4)|list|length }}
+                ],
+                backgroundColor: [
+                    '#e74a3b',
+                    '#fd7e14',
+                    '#f6c23e',
+                    '#1cc88a'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // وضع علامات على مصفوفة المخاطر
+    {% for risk in risks %}
+    if (document.getElementById('risk-matrix-{{ risk.probability }}-{{ risk.impact }}')) {
+        const cell = document.getElementById('risk-matrix-{{ risk.probability }}-{{ risk.impact }}');
+        const marker = document.createElement('div');
+        marker.className = 'risk-marker';
+        marker.setAttribute('data-bs-toggle', 'tooltip');
+        marker.setAttribute('title', '{{ risk.title }}');
+        marker.style.backgroundColor = '{{ '#e74a3b' if risk.status == 'Open' else '#1cc88a' if risk.status == 'Mitigated' else '#6c757d' }}';
+        cell.appendChild(marker);
+    }
+    {% endfor %}
+    
+    // تفعيل tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    
+    // حساب شدة المخاطر تلقائيًا
+    document.querySelectorAll('#impact, #probability').forEach(select => {
+        select.addEventListener('change', function() {
+            const impact = parseInt(document.getElementById('impact').value);
+            const probability = parseInt(document.getElementById('probability').value);
+            
+            if (impact && probability) {
+                const severity = impact * probability;
+                let severityClass;
+                
+                if (severity > 16) {
+                    severityClass = 'danger';
+                } else if (severity > 9) {
+                    severityClass = 'warning';
+                } else if (severity > 4) {
+                    severityClass = 'info';
+                } else {
+                    severityClass = 'success';
+                }
+                
+                document.getElementById('calculatedSeverity').textContent = severity;
+                document.getElementById('calculatedSeverity').className = `badge bg-${severityClass}`;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

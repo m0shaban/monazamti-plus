@@ -1,143 +1,191 @@
 {% extends "base.html" %}
 
-{% block title %}Projects{% endblock %}
+{% block title %}المشاريع{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Projects</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>المشاريع</h1>
+    <div>
         <a href="{{ url_for('main.create_project') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> New Project
+            <i class="fas fa-plus"></i> مشروع جديد
         </a>
     </div>
+</div>
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h5 class="mb-0">All Projects</h5>
-                </div>
-                <div class="col-auto">
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            Sort by: {{ sort_by|title }}
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('main.projects', sort='created_at') }}">Date Created</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.projects', sort='priority') }}">Priority</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('main.projects', sort='deadline') }}">Deadline</a></li>
-                        </ul>
-                    </div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">جميع المشاريع</h5>
+                <div class="input-group" style="width: 300px;">
+                    <input type="text" class="form-control" placeholder="البحث عن مشروع..." id="projectSearchInput">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
             </div>
-        </div>
-        
-        <div class="card-body">
-            {% if projects %}
-                <div class="row g-4">
-                    {% for project in projects %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card h-100 project-card priority-{{ project.priority|lower }}">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <h5 class="card-title">{{ project.name }}</h5>
-                                    <div class="dropdown">
-                                        <button class="btn btn-link" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v"></i>
+            <div class="card-body">
+                {% if projects %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>اسم المشروع</th>
+                                <th>الحالة</th>
+                                <th>التقدم</th>
+                                <th>تاريخ الاستحقاق</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in projects %}
+                            <tr>
+                                <td>{{ project.name }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if project.status == 'Completed' 
+                                                      else 'primary' if project.status == 'Active' 
+                                                      else 'warning' if project.status == 'On Hold'
+                                                      else 'secondary' }}">
+                                        {{ project.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ project.progress }}%" 
+                                             aria-valuenow="{{ project.progress }}" aria-valuemin="0" aria-valuemax="100">
+                                            {{ project.progress }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ project.deadline.strftime('%Y-%m-%d') if project.deadline else 'غير محدد' }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('main.edit_project', project_id=project.id) }}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ project.id }}">
+                                            <i class="fas fa-trash"></i>
                                         </button>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <a class="dropdown-item" href="{{ url_for('main.project_detail', project_id=project.id) }}">
-                                                    <i class="fas fa-eye"></i> View Details
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="{{ url_for('main.edit_project', project_id=project.id) }}">
-                                                    <i class="fas fa-edit"></i> Edit
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
-                                            <li>
-                                                <button class="dropdown-item text-danger" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#deleteProjectModal" 
-                                                        data-project-id="{{ project.id }}"
-                                                        data-project-name="{{ project.name }}">
-                                                    <i class="fas fa-trash"></i> Delete
-                                                </button>
-                                            </li>
-                                        </ul>
                                     </div>
-                                </div>
-                                <p class="card-text text-muted">{{ project.description|truncate(100) }}</p>
-                                <div class="progress mb-3">
-                                    <div class="progress-bar" role="progressbar" style="width: {{ project.progress }}%">
-                                        {{ project.progress }}%
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge bg-{{ project.priority|lower }}">{{ project.priority }}</span>
-                                    {% if project.deadline %}
-                                        <small class="text-muted">Due: {{ project.deadline.strftime('%Y-%m-%d') }}</small>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            {% else %}
+                
+                {% else %}
                 <div class="text-center py-5">
-                    <h4 class="text-muted">No projects yet</h4>
-                    <p>Get started by creating your first project</p>
+                    <div class="mb-3">
+                        <i class="fas fa-project-diagram fa-4x text-muted"></i>
+                    </div>
+                    <h4>لم يتم العثور على مشاريع</h4>
+                    <p class="text-muted">قم بإنشاء مشروعك الأول للبدء</p>
                     <a href="{{ url_for('main.create_project') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Create Project
+                        <i class="fas fa-plus"></i> إنشاء مشروع
                     </a>
                 </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Delete Project Modal -->
-<div class="modal fade" id="deleteProjectModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Project</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- نوافذ الحذف مستقلة عن الجدول -->
+{% for project in projects %}
+<!-- تحسين نافذة حذف المشروع -->
+<div class="modal fade" id="deleteModal-{{ project.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ project.id }}" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">تأكيد حذف المشروع</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete "<span id="deleteProjectName"></span>"?</p>
-                <p class="text-danger">This action cannot be undone.</p>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3 text-danger">
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    </div>
+                    <div>
+                        <p class="mb-0 fw-bold">هل أنت متأكد من رغبتك في حذف المشروع؟</p>
+                        <p class="mb-0 mt-2 text-danger"><strong>"{{ project.name }}"</strong></p>
+                    </div>
+                </div>
+                <div class="alert alert-warning mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>تنبيه:</strong> سيؤدي هذا الإجراء إلى حذف جميع المهام المرتبطة بهذا المشروع، ولا يمكن التراجع عن هذه العملية.
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteProjectForm" method="POST">
-                    <button type="submit" class="btn btn-danger">Delete</button>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <form action="{{ url_for('main.delete_project', project_id=project.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i> تأكيد الحذف
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+{% endfor %}
 {% endblock %}
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const deleteModal = document.getElementById('deleteProjectModal');
-        if (deleteModal) {
-            deleteModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const projectId = button.getAttribute('data-project-id');
-                const projectName = button.getAttribute('data-project-name');
-                
-                document.getElementById('deleteProjectName').textContent = projectName;
-                document.getElementById('deleteProjectForm').action = "{{ url_for('main.delete_project', project_id=0) }}".replace('0', projectId);
+document.addEventListener('DOMContentLoaded', function() {
+    // وظيفة البحث في المشاريع
+    const searchInput = document.getElementById('projectSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const projectName = row.cells[0].textContent.toLowerCase();
+                if (projectName.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
             });
-        }
+        });
+    }
+
+    // تعزيز استقرار نوافذ الحذف
+    const deleteModals = document.querySelectorAll('.modal');
+    deleteModals.forEach(modal => {
+        modal.addEventListener('shown.bs.modal', function () {
+            this.focus();
+        });
     });
+});
 </script>
+{% endblock %}
+
+{% block styles %}
+<style>
+/* تحسين مظهر النوافذ المنبثقة */
+.modal-content {
+    border: none;
+    border-radius: 8px;
+}
+
+.modal-backdrop {
+    opacity: 0.6 !important;
+}
+
+.modal-header .btn-close:focus {
+    box-shadow: none;
+}
+
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1rem);
+}
+</style>
 {% endblock %}

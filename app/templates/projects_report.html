@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Project Reports{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Project Reports</h1>
+        <div class="btn-group">
+            <button class="btn btn-outline-secondary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <button class="btn btn-outline-secondary" id="exportPDF">
+                <i class="fas fa-file-pdf"></i> PDF
+            </button>
+            <button class="btn btn-outline-secondary" id="exportExcel">
+                <i class="fas fa-file-excel"></i> Excel
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light h-100">
+                <div class="card-body text-center">
+                    <h1 class="display-4">{{ projects|length }}</h1>
+                    <p class="lead">Total Projects</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <h1 class="display-4">{{ projects|selectattr('status', 'equalto', 'Completed')|list|length }}</h1>
+                    <p class="lead">Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <h1 class="display-4">{{ projects|selectattr('status', 'equalto', 'Active')|list|length }}</h1>
+                    <p class="lead">Active</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body text-center">
+                    <h1 class="display-4">{{ projects|selectattr('status', 'equalto', 'On Hold')|list|length }}</h1>
+                    <p class="lead">On Hold</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">قائمة المشاريع</h5>
+            <div class="form-group mb-0 d-flex">
+                <input type="text" class="form-control" id="projectSearch" placeholder="البحث عن مشروع...">
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>اسم المشروع</th>
+                            <th>الحالة</th>
+                            <th>التقدم</th>
+                            <th>المدير</th>
+                            <th>الموعد النهائي</th>
+                            <th>التقارير</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('main.project_detail', project_id=project.id) }}">{{ project.name }}</a>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if project.status == 'Completed' 
+                                                      else 'primary' if project.status == 'Active' 
+                                                      else 'warning' if project.status == 'On Hold'
+                                                      else 'secondary' }}">
+                                    {{ project.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ project.progress }}%" 
+                                         aria-valuenow="{{ project.progress }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ project.progress }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ project.creator.username }}</td>
+                            <td>{{ project.deadline.strftime('%Y-%m-%d') if project.deadline else 'غير محدد' }}</td>
+                            <td>
+                                <a href="{{ url_for('main.project_reports', project_id=project.id) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-chart-bar"></i> عرض التقرير
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Project search functionality
+    const searchInput = document.getElementById('projectSearch');
+    const tableRows = document.querySelectorAll('tbody tr');
+    
+    searchInput.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        tableRows.forEach(row => {
+            const projectName = row.querySelector('td:first-child').textContent.toLowerCase();
+            if (projectName.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+    
+    // Export buttons
+    document.getElementById('exportPDF').addEventListener('click', function() {
+        alert('سيتم تصدير التقرير بصيغة PDF');
+        // Implementation for PDF export would go here
+    });
+    
+    document.getElementById('exportExcel').addEventListener('click', function() {
+        alert('سيتم تصدير التقرير بصيغة Excel');
+        // Implementation for Excel export would go here
+    });
+});
+</script>
+{% endblock %}

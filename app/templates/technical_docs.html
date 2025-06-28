@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}التوثيق التقني{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="fas fa-lock me-2"></i>
+                هذه الصفحة مخصصة للمطورين والمسؤولين التقنيين فقط.
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- قائمة المحتويات الجانبية -->
+        <div class="col-md-3">
+            <div class="list-group sticky-top" style="top: 2rem;">
+                <a href="#architecture" class="list-group-item list-group-item-action">الهيكل التقني</a>
+                <a href="#database" class="list-group-item list-group-item-action">قاعدة البيانات</a>
+                <a href="#api" class="list-group-item list-group-item-action">واجهة برمجة التطبيقات</a>
+                <a href="#security" class="list-group-item list-group-item-action">الأمان والحماية</a>
+                <a href="#deployment" class="list-group-item list-group-item-action">النشر والتحديث</a>
+                <a href="#development" class="list-group-item list-group-item-action">بيئة التطوير</a>
+                <a href="#libraries" class="list-group-item list-group-item-action">المكتبات المستخدمة</a>
+            </div>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div class="col-md-9">
+            <!-- الهيكل التقني -->
+            <section id="architecture" class="mb-5">
+                <h2 class="border-bottom pb-2">الهيكل التقني</h2>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">هيكل المشروع (Project Structure)</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre class="bg-light p-3 rounded"><code>project_management/
+├── app/
+│   ├── auth/              # مسارات وعمليات المصادقة
+│   ├── main/             # المسارات الرئيسية
+│   ├── models/           # نماذج قاعدة البيانات
+│   ├── static/           # الملفات الثابتة
+│   ├── templates/        # قوالب HTML
+│   ├── utils/            # أدوات مساعدة
+│   └── __init__.py      # تهيئة التطبيق
+├── instance/
+├── migrations/          # ترحيلات قاعدة البيانات
+├── venv/
+├── config.py           # إعدادات التطبيق
+└── run.py             # نقطة البداية</code></pre>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">نمط التصميم (Design Pattern)</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>يستخدم التطبيق نمط MVC (Model-View-Controller) مع Flask Blueprint:</p>
+                        <ul>
+                            <li><strong>Model:</strong> نماذج SQLAlchemy في <code>models.py</code></li>
+                            <li><strong>View:</strong> قوالب Jinja2 في مجلد <code>templates/</code></li>
+                            <li><strong>Controller:</strong> المسارات في <code>auth/</code> و <code>main/</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- قاعدة البيانات -->
+            <section id="database" class="mb-5">
+                <h2 class="border-bottom pb-2">قاعدة البيانات</h2>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">مخطط قاعدة البيانات (Database Schema)</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>جداول النظام الرئيسية:</h6>
+                        <pre class="bg-light p-3 rounded"><code>User:
+- id (PK)
+- username
+- email
+- password_hash
+- role
+- created_at
+
+Project:
+- id (PK)
+- name
+- description
+- status
+- created_by (FK: User)
+- department_id (FK)
+- created_at
+
+Task:
+- id (PK)
+- title
+- description
+- project_id (FK)
+- assigned_to (FK: User)
+- status
+- due_date</code></pre>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>إدارة الترحيلات</h5>
+                    <p class="mb-0">استخدم الأوامر التالية لإدارة ترحيلات قاعدة البيانات:</p>
+                    <pre class="bg-light p-2 mt-2 rounded"><code>flask db migrate -m "وصف التغييرات"
+flask db upgrade   # تطبيق الترحيلات
+flask db history  # عرض تاريخ الترحيلات
+flask db downgrade # التراجع عن آخر ترحيل</code></pre>
+                </div>
+            </section>
+
+            <!-- واجهة برمجة التطبيقات -->
+            <section id="api" class="mb-5">
+                <h2 class="border-bottom pb-2">واجهة برمجة التطبيقات (API)</h2>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">نقاط النهاية المتاحة (API Endpoints)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>المسار</th>
+                                        <th>الطريقة</th>
+                                        <th>الوصف</th>
+                                        <th>المصادقة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>/api/auth/login</code></td>
+                                        <td>POST</td>
+                                        <td>تسجيل الدخول وإنشاء token</td>
+                                        <td>لا</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/api/projects</code></td>
+                                        <td>GET</td>
+                                        <td>قائمة المشاريع</td>
+                                        <td>نعم</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/api/projects</code></td>
+                                        <td>POST</td>
+                                        <td>إنشاء مشروع جديد</td>
+                                        <td>نعم</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/api/tasks/{id}</code></td>
+                                        <td>GET</td>
+                                        <td>تفاصيل مهمة محددة</td>
+                                        <td>نعم</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">أمثلة على الاستخدام</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>1. تسجيل الدخول:</h6>
+                        <pre class="bg-light p-3 rounded"><code>POST /api/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin123"
+}</code></pre>
+
+                        <h6 class="mt-4">2. إنشاء مشروع جديد:</h6>
+                        <pre class="bg-light p-3 rounded"><code>POST /api/projects
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "name": "مشروع جديد",
+    "description": "وصف المشروع",
+    "status": "active"
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- الأمان والحماية -->
+            <section id="security" class="mb-5">
+                <h2 class="border-bottom pb-2">الأمان والحماية</h2>
+                
+                <div class="alert alert-danger mb-4">
+                    <h5><i class="fas fa-shield-alt me-2"></i>تنبيه أمني هام</h5>
+                    <p class="mb-0">تأكد من تغيير المفتاح السري (SECRET_KEY) وكلمات المرور الافتراضية قبل النشر.</p>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">آليات الحماية المطبقة</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <h6><i class="fas fa-lock me-2"></i>تشفير كلمات المرور</h6>
+                                <p class="mb-0">يتم استخدام Werkzeug Security لتشفير كلمات المرور باستخدام خوارزمية bcrypt.</p>
+                            </li>
+                            <li class="list-group-item">
+                                <h6><i class="fas fa-shield-alt me-2"></i>حماية CSRF</h6>
+                                <p class="mb-0">تم تفعيل حماية CSRF على جميع النماذج باستخدام Flask-WTF.</p>
+                            </li>
+                            <li class="list-group-item">
+                                <h6><i class="fas fa-user-lock me-2"></i>إدارة الجلسات</h6>
+                                <p class="mb-0">تم تأمين الجلسات باستخدام Flask-Login مع تشفير البيانات.</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- النشر والتحديث -->
+            <section id="deployment" class="mb-5">
+                <h2 class="border-bottom pb-2">النشر والتحديث</h2>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">متطلبات النشر</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre class="bg-light p-3 rounded"><code># إعداد البيئة
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+# تثبيت المتطلبات
+pip install -r requirements.txt
+
+# تهيئة قاعدة البيانات
+flask db upgrade
+
+# تشغيل التطبيق
+gunicorn -w 4 run:app    # لينكس
+python run.py            # ويندوز</code></pre>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">خطوات التحديث</h5>
+                    </div>
+                    <div class="card-body">
+                        <ol>
+                            <li>عمل نسخة احتياطية من قاعدة البيانات</li>
+                            <li>تحديث الكود من Git</li>
+                            <li>تثبيت المتطلبات الجديدة</li>
+                            <li>تنفيذ ترحيلات قاعدة البيانات</li>
+                            <li>إعادة تشغيل التطبيق</li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+
+            <!-- بيئة التطوير -->
+            <section id="development" class="mb-5">
+                <h2 class="border-bottom pb-2">بيئة التطوير</h2>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">إعداد بيئة التطوير</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6>1. المتطلبات الأساسية:</h6>
+                        <ul>
+                            <li>Python 3.11</li>
+                            <li>Git</li>
+                            <li>SQLite أو PostgreSQL</li>
+                            <li>محرر نصوص (VS Code موصى به)</li>
+                        </ul>
+
+                        <h6 class="mt-4">2. إعداد المشروع:</h6>
+                        <pre class="bg-light p-3 rounded"><code># استنساخ المشروع
+git clone [repository-url]
+
+# إنشاء البيئة الافتراضية
+python -m venv venv
+
+# تفعيل البيئة
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+# تثبيت متطلبات التطوير
+pip install -r requirements.dev.txt</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- المكتبات المستخدمة -->
+            <section id="libraries" class="mb-5">
+                <h2 class="border-bottom pb-2">المكتبات المستخدمة</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">المكتبات الرئيسية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>المكتبة</th>
+                                        <th>الإصدار</th>
+                                        <th>الاستخدام</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Flask</td>
+                                        <td>2.3.3</td>
+                                        <td>إطار العمل الرئيسي</td>
+                                    </tr>
+                                    <tr>
+                                        <td>SQLAlchemy</td>
+                                        <td>2.0.26</td>
+                                        <td>التعامل مع قاعدة البيانات</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Flask-Login</td>
+                                        <td>0.6.2</td>
+                                        <td>إدارة المصادقة</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Flask-Migrate</td>
+                                        <td>4.0.5</td>
+                                        <td>ترحيلات قاعدة البيانات</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.sticky-top {
+    top: 2rem;
+}
+
+.list-group-item {
+    border-radius: 0;
+}
+
+pre {
+    margin-bottom: 0;
+}
+
+code {
+    color: #e83e8c;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: none;
+}
+</style>
+{% endblock %}
