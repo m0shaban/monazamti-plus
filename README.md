@@ -1,7 +1,6 @@
 <div align="center">
 
-![Monazamti Plus Banner](https://placehold.co/1200x400/2c3e50/FFFFFF/png?text=منظمتي%20بلس)
-
+<a href="https://ibb.co/d02392Nx"><img src="https://i.ibb.co/xSjcvjnd/generated-image-7.png" alt="generated-image-7" border="0"></a><br /><br />
 # 🏛️ Monazamti Plus: The Enterprise Governance Platform for the MENA Region
 
 **A comprehensive project and team management system, architected with a native, right-to-left (RTL) Arabic interface to empower modern organizations in the Middle East and North Africa.**
@@ -66,13 +65,7 @@ While many project management tools exist, the vast majority are designed with a
 
 ### 🖼️ Visual Demo
 
-*(A GIF showcasing the elegant, responsive, and functional Arabic UI is absolutely essential. It should highlight the dashboard, the project tracking view, and the ease of navigating the RTL interface.)*
-
-<div align="center">
-
-![Animation of the Monazamti Plus dashboard and project management features in Arabic.](https://placehold.co/800x450/2c3e50/FFFFFF/gif?text=Live%20Arabic%20UI%20Demo)
-
-</div>
+![واجهة الاستخدام العربية التفاعلية](https://media.giphy.com/media/Nc3OKdu2U3uXxTRZaf/giphy.gif)
 
 ---
 
