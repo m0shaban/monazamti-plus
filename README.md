@@ -1,4 +1,9 @@
-![Monazamti Plus Header](https://i.ibb.co/xSjcvjnd/generated-image-7.png)
+
+<p align="center">
+  <img src="https://i.ibb.co/xSjcvjnd/generated-image-7.png" alt="Monazamti Plus Header" />
+</p>
+
+
 
 # 🏛️ Monazamti Plus: The Enterprise Governance Platform for the MENA Region
 
